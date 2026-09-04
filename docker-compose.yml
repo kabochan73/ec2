@@ -2,8 +2,9 @@
 # ローカル開発環境。R2 では frontend / backend も含めて「全部 Docker」で動かす方針
 # （docs/07-local-dev.md）。ただし一度に全部は作らず、段階的に足していく:
 #
-#   Step 2（このコミット）: db / minio だけ。まず疎通を確認する
-#   Step 3 以降           : backend（serversideup/php）/ frontend（next dev）を追加
+#   Step 2 : db / minio だけ。まず疎通を確認する
+#   Step 3 : backend（serversideup/php）を追加  ← いまここ
+#   Step 4 : frontend（next dev）を追加
 #
 # 使い方:
 #   docker compose up -d        # 起動
@@ -53,6 +54,30 @@ services:
       interval: 5s
       timeout: 3s
       retries: 10
+
+  # ── backend（Laravel / serversideup/php）────────────────────
+  # nginx + php-fpm を同梱した本番向けイメージ。ローカルも本番も同じイメージを使う
+  # （本番は docs/04 の薄い Dockerfile でコードを焼き込む。ローカルは ./backend をマウント）。
+  backend:
+    image: serversideup/php:8.4-fpm-nginx
+    container_name: ec2-backend
+    volumes:
+      # ソースをマウントしてホットリロード（php-fpm はリクエストごとに読み直すので都度反映される）
+      - ./backend:/var/www/html
+    environment:
+      # serversideup 側の運用フラグ（Laravel の .env ではなくコンテナ環境変数で渡す）
+      SSL_MODE: "off"                 # 内部通信は http。TLS は本番で Railway エッジが終端
+      PHP_OPCACHE_ENABLE: "0"         # dev はコード変更を即反映したいので opcache 無効
+      AUTORUN_ENABLED: "false"        # dev は migrate 等を手動で叩く（本番は true にして自動実行）
+    ports:
+      # ホスト 8000 → コンテナ 8080（serversideup は非 root で 8080 をリッスン）。
+      # BFF なので通常ブラウザからは使わないが、curl / Laravel Boost MCP 用に開けておく
+      - "8000:8080"
+    depends_on:
+      db:
+        condition: service_healthy
+      minio:
+        condition: service_healthy
 
   # ── バケット初期化（使い捨て）─────────────────────────────
   # minio が healthy になったら 1 回だけ実行してバケットを作る。
