@@ -351,6 +351,14 @@
 - 確認（CDP）: `/login?redirect=/cart` でログイン → `/cart` に遷移、ヘッダー ACCOUNT が `/account` に、`/bff/logout` 後は `/login` に戻る、ログイン失敗は `/login` のまま + エラー文表示、register も同様に遷移。`tsc`/`lint` パス
 - 既知: `/account`・`/checkout` はまだルートが無い（F6/F7）ので redirect 先が Next の素の 404 になる。ルート作成後に `(shop)/not-found` 経由の表示になる。ルート `app/not-found.tsx` は F8 で追加
 
+**Step F6-1 — 2026-09-04 アカウント ダッシュボード + ログアウト**
+- `lib/auth.ts` に `requireAuth(redirectTo)`: 要ログイン Server Component の先頭で呼ぶ。Cookie が無い/失効なら `/login?redirect=<戻り先>` へ `redirect()`、有効なら `{ user, token }` を返す（middleware は Cookie 有無しか見ないので、有効性チェックはここ）
+- `lib/orders.ts`: `fetchOrders` / `fetchOrderDetail`（Server Component 直呼び。トークンだけ引数で渡す）。`createOrder` は F7
+- `app/(shop)/account/page.tsx`: `requireAuth("/account")` → `fetchOrders` → ダッシュボード（`Welcome, {name}` / Recent Order 1件 or "No orders yet" / メニュー Orders・Addresses・Profile・Logout）
+- `components/account/LogoutButton.tsx`（client）: `/bff/logout` → `setQueryData(['session'], null)` → `router.replace('/')` + `refresh`
+- 確認（CDP、ルート pre-warm 後）: 未ログイン `/account` → `/login?redirect=%2Faccount`、register → `/account` に "Welcome, Account Taro" / "No orders yet" / メニュー3件 + Logout、Logout → ACCOUNT リンクが `/login` に戻る、以後 `/account` 再訪で `/login` へ。`tsc`/`lint` パス
+- テスト tips: dev サーバーは初回ルートコンパイルが重く、CDP テストで待ち時間不足の false fail が出る。テスト前に `curl` でルートを pre-warm し、submit 後は 6〜7秒待つ
+
 ### R2 振り返り（実装後に記入）
 - 良かった点:
 - 詰まった点:
