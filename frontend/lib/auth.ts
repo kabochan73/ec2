@@ -10,7 +10,14 @@ import type { NextResponse } from "next/server";
 
 import { ApiError, apiFetch } from "@/lib/api";
 import { SESSION_COOKIE_NAME } from "@/lib/constants";
-import type { ApiResource, LoginPayload, RegisterPayload, User } from "@/lib/types";
+import type {
+  ApiResource,
+  LoginPayload,
+  RegisterPayload,
+  UpdatePasswordPayload,
+  UpdateProfilePayload,
+  User,
+} from "@/lib/types";
 
 const THIRTY_DAYS_SECONDS = 60 * 60 * 24 * 30;
 
@@ -75,6 +82,31 @@ export async function fetchCurrentUser(token: string): Promise<User> {
     headers: { Authorization: `Bearer ${token}` },
   });
   return result.data;
+}
+
+/** PUT /api/me（app/bff/me/route.ts から。氏名・メール変更） */
+export async function updateProfile(
+  token: string,
+  payload: UpdateProfilePayload,
+): Promise<User> {
+  const result = await apiFetch<ApiResource<User>>("/api/me", {
+    method: "PUT",
+    headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
+    body: JSON.stringify(payload),
+  });
+  return result.data;
+}
+
+/** PUT /api/me/password（app/bff/me/password/route.ts から）。成功時 204、本文なし */
+export async function updatePassword(
+  token: string,
+  payload: UpdatePasswordPayload,
+): Promise<void> {
+  await apiFetch<void>("/api/me/password", {
+    method: "PUT",
+    headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
+    body: JSON.stringify(payload),
+  });
 }
 
 /**

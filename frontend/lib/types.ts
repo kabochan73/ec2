@@ -158,6 +158,14 @@ export type RegisterPayload = {
   password_confirmation: string;
 };
 
+// lib/auth.ts のプロフィール更新の入力。
+export type UpdateProfilePayload = { name: string; email: string };
+export type UpdatePasswordPayload = {
+  current_password: string;
+  password: string;
+  password_confirmation: string;
+};
+
 // lib/addresses.ts の入力（backend/app/Http/Requests/Address/*Request のボディ形）。
 export type AddressPayload = {
   recipient_name: string;
