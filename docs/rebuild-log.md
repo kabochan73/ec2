@@ -161,6 +161,12 @@
 - Seeder はまだ。ダミー顧客はユーザーが手動投入。商品シード（画像なし・NO IMAGE 表示）は別 Step で
 - 確認: 全 Factory を組み合わせて生成 → role / is_default / キャスト / 在庫 state / 注文合計の整合を確認、Pint パス
 
+**Step 9b — 2026-09-04 AdminUserSeeder**
+- `AdminUserSeeder`: `updateOrCreate(['email'=>'test@example.com'], ['name'=>'test', 'password'=>'Takumi7355', 'role'=>Admin, 'email_verified_at'=>now()])`。`db:seed` を何度流しても重複しない
+- `DatabaseSeeder` はスキャフォールドの factory ユーザー生成を削除し `AdminUserSeeder` のみ呼ぶ
+- categories・商品・ダミー顧客の Seeder は作らない（categories は /admin から、顧客は手動、商品は別 Step）
+- 確認: `migrate:fresh --seed` で admin 1人（role=admin / verified）、`Hash::check('Takumi7355', ...)` OK、`db:seed` 再実行しても users は1件のまま
+
 ### R2 振り返り（実装後に記入）
 - 良かった点:
 - 詰まった点:
