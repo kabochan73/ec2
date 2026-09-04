@@ -200,6 +200,16 @@
   - `related`: 同カテゴリの他の公開商品 最大4点を `setRelation('related', ...)` で疑似リレーション化 → `ProductSummaryResource`
 - 確認（手動）: `boxy-cotton-t-shirt` 詳細（variants S/M/L・related 2件）、`heavyweight-long-sleeve-tee` の L が `sold_out`、未公開 `ribbed-knit-polo`→404、存在しない slug→404
 
+**Step 12a — 2026-09-04 認証 API（register / login / logout / me）**
+- Action: `RegisterUser`（`User::create` → `createToken('api')`）、`AuthenticateUser`（メール存在とパスワード不一致を区別しない汎用エラー、`ValidationException` で 422）
+- FormRequest: `RegisterRequest`（`name` / `email` unique / `password` min:8 confirmed）、`LoginRequest`
+- `UserResource`（id / name / email / role→value）
+- `AuthController`（register 201・login 200、どちらも `UserResource + additional(['token'=>...])`／logout は `currentAccessToken()->delete()` で今のトークンだけ失効 → 204）
+- `ProfileController@show`（GET /me、`auth:sanctum`）
+- `AppServiceProvider` に `RateLimiter::for('login')` = メール+IP で 5回/分。`/login` に `throttle:login`
+- 確認（手動）: register→201(token/role=customer)、/me（token あり→user / なし→401）、重複メール→422、password 不一致→422、login OK（admin は role=admin）、wrong pw / unknown email はどちらも同じ 422 メッセージ、logout→204→その後 /me は 401、login 6連打で 6回目 429
+- `PUT /me` / `PUT /me/password`（プロフィール更新）は Step 12b
+
 ### R2 振り返り（実装後に記入）
 - 良かった点:
 - 詰まった点:
