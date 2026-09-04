@@ -151,6 +151,16 @@
 - `AppServiceProvider::boot()` に `Model::preventLazyLoading(! isProduction())`（dev で N+1 を例外化。docs/06 §4。ec1 では未導入だった）
 - 確認: tinker でリレーション・キャスト動作 OK。`preventLazyLoading` は**複数行のクエリ結果でのみ**発動する（Laravel 仕様: 単一モデルの遅延ロードは N+1 ではないので素通し）ことを確認
 
+**Step 9a — 2026-09-04 Factory 一式**
+- `Category` / `Product` / `ProductImage` / `ProductVariant` / `Address` / `Order` / `OrderItem` の Factory を作成、`User` に `admin()` state 追加
+- state: `Product::unpublished()`、`ProductVariant::soldOut()` / `lowStock()` / `inStock()`、`Address::default()`、`Order::cancelled()`
+- `OrderItemFactory` は内部で product + variant を作ってスナップショット列に値をコピー（参照先と中身がズレないように）
+- `OrderFactory` の送料は `config('shop.*')` を参照して subtotal と整合
+- 都道府県は faker(en_US) で作れないので固定リストから選ぶ（Address / Order）
+- `ProductVariantFactory` に注意コメント: 1商品に複数 variant を作るときは `->sequence()` で size を明示（`->count(3)` だけだと size 衝突で UniqueConstraintViolation）
+- Seeder はまだ。ダミー顧客はユーザーが手動投入。商品シード（画像なし・NO IMAGE 表示）は別 Step で
+- 確認: 全 Factory を組み合わせて生成 → role / is_default / キャスト / 在庫 state / 注文合計の整合を確認、Pint パス
+
 ### R2 振り返り（実装後に記入）
 - 良かった点:
 - 詰まった点:
