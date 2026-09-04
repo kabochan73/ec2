@@ -324,6 +324,18 @@
 - 確認（CDP）: M×1（正常）+ Beanie×1（売り切れ）+ S×5（在庫2）→ Beanie に `Sold Out`、S に `Only 2 left`、S 行価格が ¥99,999→¥22,000 に補正、Subtotal は補正後で ¥139,000、Checkout 無効、S 行 `+` 無効・M 行 `+` は有効。`tsc`/`lint` パス
 - 補足: `/bff/products/{slug}` は related まで読む重めのクエリなので、dev 環境では再検証の反映に1〜2秒の間がある（本番 opcache 有効なら短い）
 
+**Step F5a — 2026-09-04 認証の BFF（lib/auth + Route Handler + middleware）**
+- `lib/api.ts` に `apiErrorResponse(error)`: `ApiError` を Laravel と同じ形・同じステータスでブラウザに返す（フォームの 422 表示用）。`ApiError` 以外は投げ直す
+- `lib/auth.ts`（サーバー専用）: `getSessionToken` / `setSessionCookie`（httpOnly / secure(prod) / sameSite=lax / 30日）/ `clearSessionCookie` ＋ `registerUser` / `loginUser` / `logoutUser` / `fetchCurrentUser`
+- `lib/types.ts` に `LoginPayload` / `RegisterPayload`
+- Route Handler（薄い窓口。実処理は lib/auth）:
+  - `app/bff/register/route.ts`（POST → 201、token は Cookie にだけ、body は user）
+  - `app/bff/login/route.ts`（POST → 200、同上）
+  - `app/bff/logout/route.ts`（POST → Laravel でトークン失効 → Cookie 削除 → 204。失効失敗は握りつぶす）
+  - `app/bff/me/route.ts`（GET → Cookie 無ければ即 401、あれば `/api/me`。PUT は F6）
+- `middleware.ts`: `/checkout/:path*` `/account/:path*` を Cookie 有無でガード、未ログインは `/login?redirect=<元パス>`（307）。`/admin` は role 確認が要るので含めない
+- 確認（curl）: register 201 + `Set-Cookie ec_token`（HttpOnly / Max-Age=2592000）+ body に token 無し、`/bff/me`（cookie あり→user / なし→401）、重複メール→422 中継、login 200（role=admin）、login 失敗→422、logout 204 + Cookie 削除 → 以後 `/bff/me` 401、`/account`・`/checkout` 未ログイン→`/login?redirect=` へ 307、cookie あれば通過。`tsc`/`lint` パス
+
 ### R2 振り返り（実装後に記入）
 - 良かった点:
 - 詰まった点:
