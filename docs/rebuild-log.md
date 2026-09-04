@@ -180,6 +180,16 @@
 - `DatabaseSeeder` は `AdminUserSeeder` → `CategorySeeder` → `ProductSeeder` の順で呼ぶ
 - 確認: `migrate:fresh --seed` で 4カテゴリ / 14商品（公開13）/ 36 variant、`db:seed` 再実行で件数不変（冪等）
 
+**Step 11a — 2026-09-04 商品閲覧 API（カテゴリ一覧 + 商品一覧）**
+- `GET /api/categories`: `CategoryController@index` + `CategoryResource`（id / name / slug / position、position 順）
+- `GET /api/products`: `ProductController@index` + `ProductSummaryResource` + `ProductImageResource`
+  - `published()` スコープで公開のみ、`?category=` slug 絞り込み、`?new=true` で新着30日以内・新着順、`?limit=`
+  - `->with(['category', 'images' => 2件])` ＋ `->withSum('variants', 'stock')` で N+1 回避
+  - `stock_status` は全 variant 合算（`variants_sum_stock`）を `StockStatus::fromStock()` に通す
+  - 画像は `/media/{path}` を組み立てて返す（seeder は画像なしなので今は `images: []`）
+- 確認（手動 / curl）: カテゴリ4件、tops 3件（未公開除外）、`?new` 新着順、未知カテゴリ→空、`stock_status` は beanie→sold_out / card-holder→low_stock / cap→in_stock
+- **自動テストは後回し**（Step 11 で決定）。ec1 も Feature テスト未整備。`phpunit.xml` は sqlite だがマイグレーションが Postgres 専用機能を使うため、テスト着手時に `ec2_testing` DB へ切り替えが必要
+
 ### R2 振り返り（実装後に記入）
 - 良かった点:
 - 詰まった点:
