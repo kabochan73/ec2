@@ -275,6 +275,13 @@
 - 確認: `curl localhost:3000` 200、h2 は Tops/Bottoms/Outerwear/Accessories、公開13商品（Ribbed Knit Polo 除外）、`tsc`/`lint` パス、デスクトップのスクショで見た目確認
   - ※ headless Chrome のモバイル幅スクショが layout viewport とズレて信用できないので、モバイル表示は実ブラウザで F8 の仕上げ時に確認する
 
+**Step F2b — 2026-09-04 トップページの装飾セクション**
+- `components/home/`: `Hero`（`h-screen` の `bg-ink`、中央にブランド名 + タグライン）/ `BrandConcept`（理念 3〜4行、中央寄せ）/ `Lookbook`（`overflow-x-auto` の帯、`bg-mist` プレースホルダ6枚）/ `AboutSection`（沿革・素材・製造の3ブロック、画像枠は `bg-mist`、交互レイアウト）
+- 文言はすべてプレースホルダ（英語のブランド世界観文）。実画像は `TODO(実画像)` コメント
+- `app/(shop)/page.tsx`: `Hero → BrandConcept → Lookbook → CategoryGrid → AboutSection` の順（docs/01 通り）
+- 全部データ取得なしの静的 Server Component
+- 確認: `curl` 200、`<section>` 8個（Hero + Concept + Lookbook + カテゴリ4 + About）、About の3ラベル（Since 2019 / Material / Production）描画、`tsc`/`lint` パス、Hero のスクショ
+
 ### R2 振り返り（実装後に記入）
 - 良かった点:
 - 詰まった点:
