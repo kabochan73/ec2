@@ -237,6 +237,14 @@
 - `image_url` は画像なし商品では空文字（`order_items.image_url` は NOT NULL）
 - `GET /api/orders`（一覧）・`GET /api/orders/{number}`（詳細）は Step 14b
 
+**Step 14b — 2026-09-04 注文一覧・詳細 API**
+- `OrderSummaryResource`（order_number / created_at / item_count / total / status）。`withCount('items')` の `items_count` を使い明細は全件ロードしない
+- `OrderController@index`: 本人の注文を `created_at` 降順（`id` 降順を tiebreaker）、`withCount('items')`
+- `OrderController@show`: `$request->user()->orders()->where('order_number', ...)->with('items')->firstOrFail()`。本人スコープ＋`firstOrFail` なので他人・存在しない番号はどちらも 404
+- routes: `GET /orders`、`GET /orders/{orderNumber}`
+- 確認（PHP + curl）: 一覧は本人のみ・新しい順・item_count、詳細は自分のは 200（items 込み）、他人の注文番号→404、存在しない番号→404、無認証→401
+- これで docs/03 の注文エンドポイントは全部そろった（バックエンドの公開＋会員 API は管理を除き完成）
+
 ### R2 振り返り（実装後に記入）
 - 良かった点:
 - 詰まった点:
