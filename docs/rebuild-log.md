@@ -311,6 +311,19 @@
   - 金額は「追加時のスナップショット」。在庫再検証（売り切れ警告・在庫上限・価格変動・CHECKOUT ガード）は F4b
 - 確認（CDP）: 空カート 200、M×2 + FREE×1 追加 → 2行・CART (3)・Subtotal ¥52,000・Shipping Free、ステッパー `+` で CART (3)→(4)、Remove で行削除 + ヘッダー同期。`tsc`/`lint` パス
 
+**Step F4b — 2026-09-04 カートの在庫再検証**
+- `app/bff/products/[slug]/route.ts`: client からカート明細を検証するための商品詳細エンドポイント（`getProduct` を呼ぶ、認証不要、null なら 404）
+- `lib/hooks/useCartValidation.ts`（client、react-query の `useQueries`）: カート内 unique な slug ごとに `/bff/products/{slug}` を1本ずつ。`getValidation(item)` が `{ currentStock, currentPrice, available }` を返す（未取得は楽観的に available、商品消滅は available=false、variant 消滅も false）
+- `lib/types.ts` に `CartLineValidation`
+- カートページに組み込み:
+  - 売り切れ/未公開 → `Sold Out` 表示、行の `+` 無効
+  - 在庫が今の数量を下回る → `Only N left in stock...` 警告、`+` 無効
+  - 価格変動 → 最新価格で行合計・小計を再計算
+  - どれか該当 or 再検証中 → `CHECKOUT` を無効化（`pointer-events-none` + graphite 背景 + `tabIndex=-1`）
+- `aspect-[3/4]` / `aspect-[4/3]` → 正準形 `aspect-3/4` / `aspect-4/3` に統一（Tailwind IDE 警告解消）
+- 確認（CDP）: M×1（正常）+ Beanie×1（売り切れ）+ S×5（在庫2）→ Beanie に `Sold Out`、S に `Only 2 left`、S 行価格が ¥99,999→¥22,000 に補正、Subtotal は補正後で ¥139,000、Checkout 無効、S 行 `+` 無効・M 行 `+` は有効。`tsc`/`lint` パス
+- 補足: `/bff/products/{slug}` は related まで読む重めのクエリなので、dev 環境では再検証の反映に1〜2秒の間がある（本番 opcache 有効なら短い）
+
 ### R2 振り返り（実装後に記入）
 - 良かった点:
 - 詰まった点:
