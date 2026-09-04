@@ -56,7 +56,7 @@
 
 - **backend のアプリサーバーを FrankenPHP / Octane から nginx + php-fpm に変更**（2026-09-03 決定）。ローカルも本番も同一イメージ `serversideup/php:8.4-fpm-nginx` を使う。
   - **理由**: Octane はワーカー常駐で状態リークの考慮が要るが、この規模では性能メリットより落とし穴のほうが大きい。nginx + php-fpm の定番構成に寄せる。
-  - **自前 Dockerfile（fpm + nginx + supervisord 手書き）ではなく `serversideup/php` を採用**（2026-09-03 決定）。理由: nginx.conf / php-fpm.conf / supervisord.conf を保守しなくて済む、opcache・php-fpm チューニング・非root・healthcheck・s6 での PID1 シグナル処理が最初から入っている、`pdo_pgsql` `intl` など拡張も同梱、`AUTORUN_*` env で起動時 migrate / config:cache を宣言的に指定できる。デメリット（nginx 設定を手で書く経験は積めない）より、枯れたベースイメージを正しく使う方が実務的と判断。
+  - **自前 Dockerfile（fpm + nginx + supervisord 手書き）ではなく `serversideup/php` を採用**（2026-09-03 決定）。理由: nginx.conf / php-fpm.conf / supervisord.conf を保守しなくて済む、opcache・php-fpm チューニング・非root・healthcheck・s6 での PID1 シグナル処理が最初から入っている、`pdo_pgsql` など基本拡張は同梱（`intl` / `gd` は非同梱だが R2 では未使用）、`AUTORUN_*` env で起動時 migrate / config:cache を宣言的に指定できる。デメリット（nginx 設定を手で書く経験は積めない）より、枯れたベースイメージを正しく使う方が実務的と判断。
   - ローカル: compose の `image:` で serversideup を直接指定し `./backend` をマウント（コンテナ1つ。nginx も同梱）。`AUTORUN_ENABLED=false` で artisan は手動。
   - 本番（Railway）: `FROM serversideup/php:8.4-fpm-nginx` の薄い Dockerfile でコードを COPY + `composer install --no-dev`。migrate 等は `AUTORUN_*` env に任せる。リッスンポートは 8080。
   - R1 の `docs/04` にあった FrankenPHP Dockerfile 方針・`octane:frankenphp` 起動は破棄。`docs/04` / `docs/07` を serversideup ベースに書き換え済み。
@@ -86,6 +86,15 @@
 - `docker-compose.yml`: db（postgres:16-alpine）/ minio（S3互換）/ createbuckets（`ec2-media` を自動作成する使い捨て）
 - backend / frontend はまだ入れない（Step 3 以降で serversideup/php・next dev を追加）
 - 確認済み: `docker compose up -d` で db・minio が healthy、`pg_isready` OK、`ec2-media` バケット作成成功（private）
+
+**Step 3 — 2026-09-04 backend（Laravel 12）+ Postgres 疎通**
+- `composer create-project laravel/laravel:^12`（使い捨て `composer:2` コンテナ）→ `backend/`（framework v12.69.1）
+- `docker-compose.yml` に `backend` サービス追加（`serversideup/php:8.4-fpm-nginx` を直接使用、`./backend` マウント、`SSL_MODE=off` / `PHP_OPCACHE_ENABLE=0` / `AUTORUN_ENABLED=false`、ホスト 8000→コンテナ 8080）
+- `backend/.env`（と `.env.example`）を Postgres コンテナに接続（`DB_CONNECTION=pgsql` / `DB_HOST=db`）。`APP_NAME=EC-PORTFOLIO` / `APP_URL=http://localhost:8000`
+- `php artisan install:api` で Sanctum v4 導入、`routes/api.php` 生成、`bootstrap/app.php` に api ルート登録。`User` に `HasApiTokens` トレイト追加
+- `install:api` の migrate が Postgres に対して成功（users / cache / jobs / personal_access_tokens など10テーブル）→ DB 疎通確認
+- `GET /api/health`（DB 接続チェック込み）を追加。`curl localhost:8000/api/health` → `{"status":"ok","app":"EC-PORTFOLIO","database":"ok",...}`
+- serversideup の `8.4-fpm-nginx` に `intl` / `gd` / `bcmath` は非同梱と判明。R2 スコープでは未使用なので追加せず、docs 04 / 07 の記述を修正
 
 ### R2 振り返り（実装後に記入）
 - 良かった点:

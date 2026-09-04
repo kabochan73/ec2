@@ -60,7 +60,7 @@ backend:
     minio: { condition: service_healthy }
 ```
 
-- 拡張（`pdo_pgsql` `intl` `gd` `redis` 等）は同梱済み。追加したくなったら `FROM serversideup/php:8.4-fpm-nginx` の `Dockerfile.dev` を作って `docker-php-ext-install` を足す。今は不要。
+- 拡張は `pdo_pgsql` `redis` `opcache` `zip` `mbstring` などの基本セットが同梱。**`intl` / `gd` / `bcmath` は入っていない**（R2 スコープでは未使用なので今は不要）。追加したくなったら `FROM serversideup/php:8.4-fpm-nginx` の `Dockerfile.dev` を作って `docker-php-ext-install` を足す。
 - `composer install` はイメージ起動時には走らない。初回だけ手動（下記セットアップ）。
 - Linux ホストで所有権がずれる場合は `PUID` / `PGID` を自分の uid に合わせる（Mac の Docker Desktop なら不要）。
 

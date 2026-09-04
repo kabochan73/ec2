@@ -12,7 +12,7 @@
 ブラウザ → `frontend`（公開） → `backend.railway.internal:8080`（内部） → `postgres.railway.internal`。
 `backend` に公開ドメインは付けない（BFF のため不要、攻撃面を減らす）。
 
-`serversideup/php` は nginx + php-fpm を s6-overlay で1コンテナにまとめた本番向けイメージ。opcache / php-fpm チューニング済み・非root・healthcheck 付き。`pdo_pgsql` `intl` などの拡張も同梱。
+`serversideup/php` は nginx + php-fpm を s6-overlay で1コンテナにまとめた本番向けイメージ。opcache / php-fpm チューニング済み・非root・healthcheck 付き。`8.4-fpm-nginx`（Debian trixie）に同梱の拡張は `pdo_pgsql` `pdo_mysql` `pdo_sqlite` `redis` `opcache` `zip` `mbstring` `curl` `sodium` などの基本セット。**`intl` / `gd` / `bcmath` は入っていない**（このプロジェクトの R2 スコープでは未使用なので追加しない。必要になったら薄い Dockerfile で `docker-php-ext-install` する）。
 
 ## リポジトリ構成
 
@@ -118,7 +118,7 @@ RUN composer install --no-dev --optimize-autoloader --no-interaction --prefer-di
 ```
 
 - nginx.conf も php-fpm.conf もプロセス管理（s6-overlay）も**書かない**（ベースイメージが持っている）。webroot は `/var/www/html/public`（デフォルト）。
-- 拡張（`pdo_pgsql` `intl` `gd` `redis` 等）は同梱済み。追加が必要になったら `docker-php-ext-install` を1行足す。
+- `pdo_pgsql` は同梱。`intl` / `gd` / `bcmath` は非同梱だが R2 では未使用。追加が必要になったら `RUN docker-php-ext-install ...` を1行足す。
 - リッスンポートは 8080（非root）。Railway の backend サービスの内部ポートを 8080 に設定する。
 - 権限（`storage/` `bootstrap/cache/`）はベースイメージの起動処理が調整する。
 
