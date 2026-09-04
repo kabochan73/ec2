@@ -5,9 +5,10 @@
 // ─────────────────────────────────────────────────────────────
 
 import { cookies } from "next/headers";
+import { redirect } from "next/navigation";
 import type { NextResponse } from "next/server";
 
-import { apiFetch } from "@/lib/api";
+import { ApiError, apiFetch } from "@/lib/api";
 import { SESSION_COOKIE_NAME } from "@/lib/constants";
 import type { ApiResource, LoginPayload, RegisterPayload, User } from "@/lib/types";
 
@@ -74,4 +75,29 @@ export async function fetchCurrentUser(token: string): Promise<User> {
     headers: { Authorization: `Bearer ${token}` },
   });
   return result.data;
+}
+
+/**
+ * 要ログインの Server Component（/account 系）の先頭で呼ぶ。
+ * middleware は Cookie の有無しか見ていないので、ここでトークンの有効性まで確認し、
+ * 無い/失効していれば `/login?redirect=<戻り先>` へ飛ばす。
+ */
+export async function requireAuth(
+  redirectTo: string,
+): Promise<{ user: User; token: string }> {
+  const loginPath = `/login?redirect=${encodeURIComponent(redirectTo)}`;
+  const token = await getSessionToken();
+  if (!token) {
+    redirect(loginPath);
+  }
+
+  try {
+    const user = await fetchCurrentUser(token);
+    return { user, token };
+  } catch (error) {
+    if (error instanceof ApiError && error.status === 401) {
+      redirect(loginPath);
+    }
+    throw error;
+  }
 }
