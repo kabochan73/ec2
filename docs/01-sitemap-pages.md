@@ -76,7 +76,7 @@
     - `SIZE GUIDE` … `size_chart` を表でレンダリング（null のカテゴリは非表示）
     - `SHIPPING & RETURNS` … 静的
   - スペック（アコーディオン外に小さく）: `ORIGIN` `origin` / `PRODUCT CODE` `product_code`
-- 下部: `YOU MAY ALSO LIKE` — 同カテゴリの他商品を最大4点
+- 下部: `YOU MAY ALSO LIKE` — 同カテゴリの他の公開商品を position 順に全件（件数上限なし。カテゴリ1つあたり3〜6点のため）
 
 ### `/cart` カート
 - 明細行: サムネ / 商品名・サイズ（・色）/ 単価 / 数量ステッパー / 小計 / 削除

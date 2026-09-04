@@ -57,14 +57,15 @@ class ProductController extends Controller
         ]);
 
         // Product に related という本物のリレーションは無いが、setRelation() で疑似的に
-        // セットすると Resource 側で whenLoaded('related') が使える
+        // セットすると Resource 側で whenLoaded('related') が使える。
+        // 同カテゴリの他の公開商品を position 順に全件。カテゴリ1つあたり3〜6点なので
+        // 件数上限は設けない（最大でも「カテゴリ点数 - 1」）。
         $product->setRelation('related', Product::published()
             ->whereKeyNot($product->id)
             ->where('category_id', $product->category_id)
             ->with(['category', 'images' => fn ($q) => $q->orderBy('position')->limit(2)])
             ->withSum('variants', 'stock')
             ->orderBy('position')
-            ->limit(4)
             ->get());
 
         return ProductDetailResource::make($product);

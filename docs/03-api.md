@@ -67,7 +67,7 @@
     { "id": 56, "size": "M", "color": null, "stock": 2,  "stock_status": "low_stock" },
     { "id": 57, "size": "L", "color": null, "stock": 0,  "stock_status": "sold_out" }
   ],
-  "related": [ /* 同カテゴリ最大4点、一覧と同じ要約形式 */ ]
+  "related": [ /* 同カテゴリの他の公開商品を position 順に全件、一覧と同じ要約形式 */ ]
 } }
 ```
 
