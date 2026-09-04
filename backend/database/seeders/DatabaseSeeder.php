@@ -9,13 +9,18 @@ class DatabaseSeeder extends Seeder
     /**
      * Seed the application's database.
      *
-     * 今は管理者アカウントのみ。
-     * - ダミー顧客は各自が手動投入（tinker / 管理画面）
-     * - categories は /admin のカテゴリ管理から作る方針なので Seeder を作らない
-     * - 商品シードは別途（画像なし・フロントで NO IMAGE 表示）
+     * - AdminUserSeeder … 管理者アカウント1人
+     * - CategorySeeder  … カテゴリ4件（Tops / Bottoms / Outerwear / Accessories）
+     * - ProductSeeder   … 開発・レビュー用カタログ（画像なし。ProductSeeder より前に CategorySeeder が必要）
+     *
+     * ダミー顧客は各自が手動投入する（tinker / 管理画面）。
      */
     public function run(): void
     {
-        $this->call(AdminUserSeeder::class);
+        $this->call([
+            AdminUserSeeder::class,
+            CategorySeeder::class,
+            ProductSeeder::class,
+        ]);
     }
 }
