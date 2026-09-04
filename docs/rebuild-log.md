@@ -218,6 +218,14 @@
 - 確認（手動）: 氏名・メール変更 200、他人のメール→422、メール据え置き→200（自分除外）、パスワード変更 204 → 旧 pw ログイン不可・新 pw 可、`current_password` 誤り→422（`errors.current_password`）
 - これで docs/03 の認証エンドポイントは全部そろった
 
+**Step 13 — 2026-09-04 住所録 API（/api/addresses）**
+- Action: `CreateAddress` / `UpdateAddress` / `DeleteAddress` / `SetDefaultAddress`（`is_default` 切り替えはトランザクション内で「他を false 化」→「自分を更新」）
+- FormRequest: `StoreAddressRequest` / `UpdateAddressRequest`（`postal_code` は `regex:/^\d{3}-\d{4}$/`。`UpdateAddressRequest::authorize()` で `route('address')?->user_id === user()->id` を確認し他人のものは 404）
+- `AddressResource`、`AddressController`（index は `is_default` 先頭 / store 201 / update / destroy 204 / setDefault）。destroy・setDefault はボディなしなので Controller の `authorizeOwnership()` で 404 判定
+- routes（`auth:sanctum` グループ）: GET/POST `/addresses`、PUT/DELETE `/addresses/{address}`、POST `/addresses/{address}/default`
+- 確認（PHP + curl スクリプト）: store（1件目 is_default=false、2件目 is_default=true で1件目が false 化）、index は default 先頭、setDefault で入れ替わり、他人が update/delete → 404、`postal_code` 形式不正 → 422、削除 204
+- デフォルト住所を削除しても他への自動昇格はしない（docs/03 に明記なし）
+
 ### R2 振り返り（実装後に記入）
 - 良かった点:
 - 詰まった点:
