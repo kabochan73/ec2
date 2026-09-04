@@ -166,6 +166,23 @@ export type UpdatePasswordPayload = {
   password_confirmation: string;
 };
 
+// lib/orders.ts createOrder の入力（backend/app/Http/Requests/Order/StoreOrderRequest.php）。
+// address_id と address はどちらか一方だけ指定する。
+export type CreateOrderPayload = {
+  items: { variant_id: number; quantity: number }[];
+  address_id?: number;
+  address?: {
+    recipient_name: string;
+    postal_code: string;
+    prefecture: string;
+    city: string;
+    address_line1: string;
+    address_line2?: string | null;
+    phone: string;
+  };
+  save_address?: boolean;
+};
+
 // lib/addresses.ts の入力（backend/app/Http/Requests/Address/*Request のボディ形）。
 export type AddressPayload = {
   recipient_name: string;

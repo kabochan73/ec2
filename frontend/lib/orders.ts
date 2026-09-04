@@ -7,7 +7,26 @@
 // ─────────────────────────────────────────────────────────────
 
 import { ApiError, apiFetch } from "@/lib/api";
-import type { ApiCollection, ApiResource, OrderDetail, OrderSummary } from "@/lib/types";
+import type {
+  ApiCollection,
+  ApiResource,
+  CreateOrderPayload,
+  OrderDetail,
+  OrderSummary,
+} from "@/lib/types";
+
+/** POST /api/orders（app/bff/orders/route.ts から。/checkout の注文確定）。在庫不足は 422 で throw */
+export async function createOrder(
+  token: string,
+  payload: CreateOrderPayload,
+): Promise<OrderDetail> {
+  const result = await apiFetch<ApiResource<OrderDetail>>("/api/orders", {
+    method: "POST",
+    headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
+    body: JSON.stringify(payload),
+  });
+  return result.data;
+}
 
 /** GET /api/orders（本人の注文一覧、新しい順） */
 export async function fetchOrders(token: string): Promise<OrderSummary[]> {
