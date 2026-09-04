@@ -210,6 +210,14 @@
 - 確認（手動）: register→201(token/role=customer)、/me（token あり→user / なし→401）、重複メール→422、password 不一致→422、login OK（admin は role=admin）、wrong pw / unknown email はどちらも同じ 422 メッセージ、logout→204→その後 /me は 401、login 6連打で 6回目 429
 - `PUT /me` / `PUT /me/password`（プロフィール更新）は Step 12b
 
+**Step 12b — 2026-09-04 プロフィール更新 API（PUT /me, PUT /me/password）**
+- Action: `UpdateProfile`（name / email 更新）、`UpdatePassword`（更新のみ。現パスワード照合は FormRequest 側）
+- FormRequest: `UpdateProfileRequest`（`email` は `Rule::unique('users','email')->ignore($this->user()->id)` で自分を除外）、`UpdatePasswordRequest`（`current_password:sanctum` 組み込みルール ＋ `password` min:8 confirmed）
+- `ProfileController` に `update`（→ `UserResource`）／`updatePassword`（→ 204）を追加
+- routes に `PUT /me` `PUT /me/password`（`auth:sanctum` グループ）
+- 確認（手動）: 氏名・メール変更 200、他人のメール→422、メール据え置き→200（自分除外）、パスワード変更 204 → 旧 pw ログイン不可・新 pw 可、`current_password` 誤り→422（`errors.current_password`）
+- これで docs/03 の認証エンドポイントは全部そろった
+
 ### R2 振り返り（実装後に記入）
 - 良かった点:
 - 詰まった点:
