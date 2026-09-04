@@ -6,7 +6,7 @@
 // 注文確定（POST /api/orders）は書き込みなので app/bff/orders/route.ts 経由（F7）。
 // ─────────────────────────────────────────────────────────────
 
-import { apiFetch } from "@/lib/api";
+import { ApiError, apiFetch } from "@/lib/api";
 import type { ApiCollection, ApiResource, OrderDetail, OrderSummary } from "@/lib/types";
 
 /** GET /api/orders（本人の注文一覧、新しい順） */
@@ -17,13 +17,24 @@ export async function fetchOrders(token: string): Promise<OrderSummary[]> {
   return result.data;
 }
 
-/** GET /api/orders/{orderNumber}（本人以外・存在しない番号は 404 で apiFetch が throw） */
-export async function fetchOrderDetail(
+/**
+ * GET /api/orders/{orderNumber}。
+ * 他人の注文・存在しない番号は Laravel がどちらも 404（backend の OrderController::show）。
+ * ここでは 404 → null に変換し、ページ側で notFound() に変換する。
+ */
+export async function findOrder(
   token: string,
   orderNumber: string,
-): Promise<OrderDetail> {
-  const result = await apiFetch<ApiResource<OrderDetail>>(`/api/orders/${orderNumber}`, {
-    headers: { Authorization: `Bearer ${token}` },
-  });
-  return result.data;
+): Promise<OrderDetail | null> {
+  try {
+    const result = await apiFetch<ApiResource<OrderDetail>>(`/api/orders/${orderNumber}`, {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    return result.data;
+  } catch (error) {
+    if (error instanceof ApiError && error.status === 404) {
+      return null;
+    }
+    throw error;
+  }
 }
