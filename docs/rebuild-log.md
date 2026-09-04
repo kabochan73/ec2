@@ -190,6 +190,16 @@
 - 確認（手動 / curl）: カテゴリ4件、tops 3件（未公開除外）、`?new` 新着順、未知カテゴリ→空、`stock_status` は beanie→sold_out / card-holder→low_stock / cap→in_stock
 - **自動テストは後回し**（Step 11 で決定）。ec1 も Feature テスト未整備。`phpunit.xml` は sqlite だがマイグレーションが Postgres 専用機能を使うため、テスト着手時に `ec2_testing` DB へ切り替えが必要
 
+**Step 11b — 2026-09-04 商品詳細 API（GET /api/products/{slug}）**
+- `ProductController@show` + `ProductDetailResource` + `ProductVariantResource`
+  - ルートは `{product:slug}`（slug バインド。モデル既定キーは id のまま）
+  - `abort_unless($product->is_published, 404)` で未公開・存在しない slug は 404
+  - `load(['category', 'images'→position順, 'variants'→position順])`
+  - `variants`: `stock` 生値 + `stock_status`（variant 個別）
+  - `colors`: color が入った variant の色一覧（重複排除）。今回のシードは全 null なので `[]`
+  - `related`: 同カテゴリの他の公開商品 最大4点を `setRelation('related', ...)` で疑似リレーション化 → `ProductSummaryResource`
+- 確認（手動）: `boxy-cotton-t-shirt` 詳細（variants S/M/L・related 2件）、`heavyweight-long-sleeve-tee` の L が `sold_out`、未公開 `ribbed-knit-polo`→404、存在しない slug→404
+
 ### R2 振り返り（実装後に記入）
 - 良かった点:
 - 詰まった点:
