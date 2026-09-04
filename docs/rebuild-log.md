@@ -264,6 +264,17 @@
 - 確認: `curl localhost:3000` 200、Header/Footer 描画、`tsc --noEmit` / `lint` パス、スクショで見た目確認
 - **IDE エラー対処**: frontend の `node_modules` は名前付きボリューム隔離でホスト側が空だったため、エディタの TS サーバー / ESLint が `.tsx` 全体をエラー表示していた。ホストにも `cd frontend && npm ci` して解消（コンテナ用 Linux バイナリとは別に macOS 用が入る）。docs/07 に手順を追記
 
+**Step F2a — 2026-09-04 トップページ（カテゴリ別グリッド）**
+- `lib/categories.ts`（`getCategories`）/ `lib/products.ts`（`getProducts` / `getProduct`）: Server Component 直 fetch。`.tsx` に fetch を書かない
+  - キャッシュはいまは apiFetch 既定（no-store）。dev で reseed を即反映したいため。ISR + revalidateTag は管理画面フェーズで
+- `components/product/ProductMedia`: 画像ゼロなら `bg-mist` + "NO IMAGE"（`aspect-[3/4]`）。画像ありなら `next/image`（ホバー差し替え対応、当面は dormant）
+- `components/product/ProductCard`: NEW / LOW STOCK / SOLD OUT バッジ（`stock_status` は全 variant 合算）、カテゴリラベル、商品名（line-clamp-2）、`¥12,000`
+- `components/home/CategoryGrid`: カテゴリを position 順に、各カテゴリの全公開商品を grid（`grid-cols-2 md:grid-cols-4`）。商品0件のカテゴリはセクションごと非表示
+- `app/(shop)/page.tsx`: `<CategoryGrid />` のみ（Hero / Concept / Lookbook / About は F2b）
+- `Header` をモバイルで詰める（`px-4 sm:px-6` / ロゴ tracking を縮小）
+- 確認: `curl localhost:3000` 200、h2 は Tops/Bottoms/Outerwear/Accessories、公開13商品（Ribbed Knit Polo 除外）、`tsc`/`lint` パス、デスクトップのスクショで見た目確認
+  - ※ headless Chrome のモバイル幅スクショが layout viewport とズレて信用できないので、モバイル表示は実ブラウザで F8 の仕上げ時に確認する
+
 ### R2 振り返り（実装後に記入）
 - 良かった点:
 - 詰まった点:
