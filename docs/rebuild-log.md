@@ -293,6 +293,15 @@
 - 確認: `boxy-cotton-t-shirt` 200（全アコーディオン・size_chart 表・related 2件）、未公開 `ribbed-knit-polo` → 404、存在しない slug → 404 で not-found 描画、`tsc`/`lint` パス、スクショ
 - **仕様変更**: `related`（YOU MAY ALSO LIKE）の `limit(4)` を撤廃。カテゴリ1つあたり3〜6点なので上限不要、position 順に同カテゴリの他公開商品を全件。docs/01・03 も修正
 
+**Step F3b — 2026-09-04 VariantSelector + カートストア**
+- `lib/stores/cart.ts`: zustand + persist（localStorage キー `ec2-cart`、`skipHydration: true`）。`addItem`（同 variantId は数量加算）/ `removeItem` / `setQuantity`（0 以下で削除）/ `clear` / `useCartItemCount`（数量合計）
+- `lib/types.ts` に `CartItem`（フロント内部型）を追加
+- `components/providers/CartHydration.tsx`: マウント後に `useCartStore.persist.rehydrate()`。`app/layout.tsx`（root）に配置
+- `components/layout/CartCount.tsx`: 静的 → client 化。`useCartItemCount()` で `CART (n)` を表示
+- `components/product/VariantSelector.tsx`（client）: サイズセレクタ（`sold_out` は `disabled` + 打ち消し線、`low_stock` は `(LOW STOCK)` 表示）/ ADD TO CART（サイズ未選択 or 在庫0で `disabled`、押すと `addItem` + "Added" 2.5秒）。色スウォッチはコード済みだが R2 シードは全 `color=null` なので出ない
+- 商品詳細ページの配送囲みとアコーディオンの間に `<VariantSelector>` を差し込み
+- 確認（CDP 自動操作）: S 選択 → ADD TO CART 有効化 → クリックで CART (0)→(1)、`Added` 表示、localStorage に正しいスナップショット、同 variant 再追加で (1)→(2)（行は増えず数量加算）。`heavyweight-long-sleeve-tee` は L が打ち消し線・S に (LOW STOCK)。`tsc`/`lint` パス
+
 ### R2 振り返り（実装後に記入）
 - 良かった点:
 - 詰まった点:
