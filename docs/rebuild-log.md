@@ -401,6 +401,15 @@
   - 422 の `unavailable` は該当明細に「在庫が不足しています」を表示
 - 確認（curl + CDP）: `POST /bff/orders`（address_id → 201、新規住所 + save_address → 201 で住所録 +1、在庫不足（qty 5 > stock 2）→ 422 + `unavailable: [{variant_id, available:2}]`、無認証 → 401）。CDP: デフォルト住所自動選択、PLACE ORDER → 注文作成 + カート空 + `/checkout/complete?order=` へ遷移（ページは F7b）。`tsc`/`lint` パス
 
+**Step F7b — 2026-09-04 注文完了ページ（/checkout/complete）。F7 完了**
+- `app/(shop)/checkout/complete/page.tsx`: `searchParams` から `order`（注文番号）を受け取って表示するだけの薄いページ。カートを空にする処理は F7a の注文確定時点で完了済み
+  - `order` あり: "Thank You" / "Order Confirmed" / 注文番号 / View Order（`/account/orders/[number]`）・Continue Shopping（`/`）
+  - `order` なし（直接 URL アクセス等）: "Order Not Found" フォールバック + Continue Shopping
+- 確認（curl、e2e ユーザーで cookie 発行 → 実注文 → 遷移先確認）: `/checkout/complete?order=EC-20260904-0001` に Thank You / Order Confirmed / 注文番号 / View Order / Continue Shopping、`/checkout/complete`（パラメータ無し）に Order Not Found、View Order 先の `/account/orders/EC-20260904-0001` が 200。CDP スクリーンショットでも見た目・ヘッダーの CART(0)（カートが空）を確認。`tsc`/`lint` パス
+
+### F7（チェックアウト）完了
+配送先選択・新規住所・在庫再検証・注文確定・完了ページまで一通り実装。
+
 ### R2 振り返り（実装後に記入）
 - 良かった点:
 - 詰まった点:
