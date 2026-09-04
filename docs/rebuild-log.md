@@ -282,6 +282,17 @@
 - 全部データ取得なしの静的 Server Component
 - 確認: `curl` 200、`<section>` 8個（Hero + Concept + Lookbook + カテゴリ4 + About）、About の3ラベル（Since 2019 / Material / Production）描画、`tsc`/`lint` パス、Hero のスクショ
 
+**Step F3a — 2026-09-04 商品詳細ページ（骨格）**
+- `lib/api.ts` に `ApiError`（`status` / `body`）を追加。`apiFetch` は非 2xx で `ApiError` を throw（body は JSON パース試行）
+- `lib/products.ts` の `getProduct` を `Promise<ProductDetail | null>` に。404（`ApiError.status === 404`）なら null、それ以外は再 throw
+- `app/(shop)/products/[slug]/page.tsx`: Server Component。`getProduct` が null なら `notFound()`。`generateMetadata` で `title` に商品名
+  - パンくず `HOME / 商品名`、左: `ProductMedia`（画像ゼロなので NO IMAGE）、右パネル（PC スティッキー）: カテゴリ / 商品名 / 価格 / 配送目安の囲み / アコーディオン（`<details>`、JS 不要）/ `SIZE GUIDE` は `size_chart` を表描画 / `ORIGIN`・`PRODUCT CODE`
+  - 下部 `YOU MAY ALSO LIKE`: `related` を `ProductCard` グリッド
+  - サイズセレクタ + ADD TO CART（`VariantSelector`）は F3b。パネル内にコメントで枠を確保
+- `app/(shop)/not-found.tsx`: `notFound()` 用（404 / Page Not Found / Continue Shopping）。Header/Footer は (shop) レイアウトが付く
+- 確認: `boxy-cotton-t-shirt` 200（全アコーディオン・size_chart 表・related 2件）、未公開 `ribbed-knit-polo` → 404、存在しない slug → 404 で not-found 描画、`tsc`/`lint` パス、スクショ
+- **仕様変更**: `related`（YOU MAY ALSO LIKE）の `limit(4)` を撤廃。カテゴリ1つあたり3〜6点なので上限不要、position 順に同カテゴリの他公開商品を全件。docs/01・03 も修正
+
 ### R2 振り返り（実装後に記入）
 - 良かった点:
 - 詰まった点:
