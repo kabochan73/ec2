@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Http\Resources\ProductDetailResource;
 use App\Http\Resources\ProductSummaryResource;
 use App\Models\Product;
 use Illuminate\Http\Request;
@@ -38,5 +39,34 @@ class ProductController extends Controller
         }
 
         return ProductSummaryResource::collection($query->get());
+    }
+
+    /**
+     * 商品詳細（公開）。未公開・存在しない slug は 404。
+     * ルートは {product:slug} で slug 列を使ってバインドする
+     * （Product モデル自体の既定キーは変えていないので、将来の管理 API {id} 系には影響しない）。
+     */
+    public function show(Product $product): ProductDetailResource
+    {
+        abort_unless($product->is_published, 404);
+
+        $product->load([
+            'category',
+            'images' => fn ($q) => $q->orderBy('position'),
+            'variants' => fn ($q) => $q->orderBy('position'),
+        ]);
+
+        // Product に related という本物のリレーションは無いが、setRelation() で疑似的に
+        // セットすると Resource 側で whenLoaded('related') が使える
+        $product->setRelation('related', Product::published()
+            ->whereKeyNot($product->id)
+            ->where('category_id', $product->category_id)
+            ->with(['category', 'images' => fn ($q) => $q->orderBy('position')->limit(2)])
+            ->withSum('variants', 'stock')
+            ->orderBy('position')
+            ->limit(4)
+            ->get());
+
+        return ProductDetailResource::make($product);
     }
 }

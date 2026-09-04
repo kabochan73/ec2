@@ -26,3 +26,5 @@ Route::get('/health', function () {
 // --- 商品閲覧（公開） ---
 Route::get('/categories', [CategoryController::class, 'index']);
 Route::get('/products', [ProductController::class, 'index']);
+// {product:slug} … Product モデルの既定キーは id のまま、このルートだけ slug でバインドする
+Route::get('/products/{product:slug}', [ProductController::class, 'show']);
