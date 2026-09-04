@@ -106,6 +106,14 @@
 - 確認済み: `docker compose up -d` で 4 コンテナ起動、`curl localhost:3000` → 200、`tsc --noEmit` / `npm run lint` パス
 - 初回 `npm install`（コンテナ内）は数分かかる。以降は名前付きボリュームにキャッシュされる
 
+**Step 5 — 2026-09-04 BFF 疎通確認**
+- `frontend/lib/api.ts`: サーバー側専用の `apiFetch<T>(path, init)`（`API_URL` を読む、非 ok は throw、`no-store`）。最小実装。キャッシュ制御・`ApiError`・トークン付与は後の Step で追加
+- `frontend/app/bff/health/route.ts`: Route Handler。ブラウザ → Next → Laravel `/api/health` → Postgres の経路確認。上流エラーは 502。ブラウザが触る route.ts は全部 `app/bff/` 配下に置くルール
+- 確認済み: `curl localhost:3000/bff/health` → `{"status":"ok","frontend":"ok","backend":{"status":"ok","database":"ok"}}`。`tsc --noEmit` / `lint` パス
+
+### 環境構築フェーズ 完了（Step 1〜5）
+ローカルで「ブラウザ → Next.js → Laravel → PostgreSQL」＋ MinIO が `docker compose up -d` だけで動く状態。次から機能実装（DB マイグレーション設計 → 商品閲覧…）。
+
 ### R2 振り返り（実装後に記入）
 - 良かった点:
 - 詰まった点:
