@@ -3,7 +3,8 @@
 ## 方針
 
 - **`docker compose up -d` だけで開発環境が全部立ち上がる。** frontend / backend / db / minio をすべてコンテナで動かす。
-- ホストに PHP / Node / Composer / artisan を入れない。`php artisan serve` も `npm run dev` もホストでは打たない。
+- ホストに PHP / Composer / artisan を入れない。`php artisan serve` も `npm run dev` もホストでは打たない。
+- **例外**: frontend の `node_modules` だけはホストにも入れる（`cd frontend && npm ci`）。エディタの TS サーバー / ESLint がホストで動くため。ホストの Node は必要（`.nvmrc` の 22）。詳細は「初回セットアップ」の項。
 - artisan / composer / npm / pint / test はすべて `docker compose exec` 経由で叩く。
 - ソースはバインドマウントするので、コード編集は即コンテナに反映される（ホットリロード）。
 - **backend はローカルも本番も同じイメージ `serversideup/php:8.4-fpm-nginx`**（nginx + php-fpm 同梱）。ローカルはそのイメージを直接使い、本番は薄い Dockerfile でコードを焼き込むだけ（`docs/04`）。
@@ -139,6 +140,21 @@ docker compose exec backend php artisan migrate --seed
 - `db` の healthcheck が通ってから backend が起きるよう `depends_on: { db: { condition: service_healthy } }` を張る。
 - `createbuckets` が `ec2-media` を作る（`minio` が healthy になってから）。
 
+### IDE 補完のためにホストにも依存を入れる（frontend）
+
+frontend の `node_modules` は名前付きボリュームに隔離しているので**ホスト側は空**。エディタの
+TypeScript サーバー / ESLint はホストで動くため、そのままだと `.tsx` 全体で「`react` が見つからない」
+等のエラーが出る。コンテナ用（Linux バイナリ）とは別に、**ホストにも1回入れる**:
+
+```bash
+cd frontend && npm ci    # ホスト。IDE 補完・型チェック用。.gitignore 済みなのでコミットに影響なし
+```
+
+- ホスト = macOS 用バイナリ（`@tailwindcss/oxide` / `@next/swc` 等）、コンテナ = Linux 用。別々に入るので混ざらない。
+- `package.json` の依存を足したら、`docker compose exec frontend npm install` と `cd frontend && npm install` の**両方**を回す。
+- backend は `vendor/` をホストにバインドマウントしているので、この対処は不要（Intelephense はそのまま動く）。
+- ホストに Node は必要（`.nvmrc` の 22。`nvm use`）。「ホストに何も入れない」の唯一の例外がこれ。
+
 ## よく使うコマンド
 
 ```bash
@@ -180,6 +196,7 @@ docker compose exec frontend npx tsc --noEmit
 | 症状 | 対処 |
 |---|---|
 | frontend のファイル変更が反映されない | `WATCHPACK_POLLING=true` / `CHOKIDAR_USEPOLLING=true` を確認。まだなら `docker compose restart frontend` |
+| エディタで `.tsx` 全体が「`react` が見つからない」等のエラー | ホストに `node_modules` が無い。`cd frontend && npm ci`（上記「IDE 補完のために…」）。入れた後 TS サーバー再起動 |
 | `vendor` が無いと怒られる | `docker compose exec backend composer install` |
 | `SQLSTATE ... could not translate host name "db"` | backend/.env の `DB_HOST` が `db` になっているか（`127.0.0.1` はコンテナ内では自分自身） |
 | backend が 502 / 起動しない | `docker compose logs backend`。`APP_KEY` 未設定 or `storage/` 権限を疑う |

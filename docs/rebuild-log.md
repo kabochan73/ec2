@@ -254,6 +254,16 @@
 - R1 の反省を反映: ec1 は規約を後付けして「移行中」のまま終わったので、R2 は最初からその形で書く
 - ルートグループ `app/(shop)/`（Header/Footer 付き）、`app/bff/`（Route Handler）、`app/admin/`（後）に分ける
 
+**Step F1 — 2026-09-04 共通レイアウト**
+- `app/layout.tsx`: スキャフォールドを掃除（`Geist_Mono` / `dark:` / 旧 metadata 削除）。`<html><body>` シェル + Geist Sans + metadata テンプレート（`%s | EC-PORTFOLIO`）だけ
+- `app/globals.css`: デザイントークン（`--color-ink/paper/mist/graphite` の4色）、`@theme inline` で `bg-ink` 等を有効化、ダークモードなし
+- `app/(shop)/layout.tsx`: `<Header/>` + `<main class="min-h-screen pt-16">` + `<Footer/>`
+- `components/layout/`: `Header`（fixed・白背景・下ボーダー、ロゴ + ACCOUNT + CART、中央ナビなし）/ `Footer`（Newsletter + 静的ラベル + コピーライト）/ `NewsletterForm`（client、送信でトーストのみ）/ `AccountLink`・`CartCount`（F1 は静的。F5/F4 で client 化）
+- `lib/constants.ts`（`SESSION_COOKIE_NAME` / 送料しきい値 / `LOW_STOCK_THRESHOLD`）、`lib/types.ts`（backend Resource と 1:1 の型を全部）
+- `app/page.tsx` → `app/(shop)/page.tsx`（F2 までのプレースホルダ）
+- 確認: `curl localhost:3000` 200、Header/Footer 描画、`tsc --noEmit` / `lint` パス、スクショで見た目確認
+- **IDE エラー対処**: frontend の `node_modules` は名前付きボリューム隔離でホスト側が空だったため、エディタの TS サーバー / ESLint が `.tsx` 全体をエラー表示していた。ホストにも `cd frontend && npm ci` して解消（コンテナ用 Linux バイナリとは別に macOS 用が入る）。docs/07 に手順を追記
+
 ### R2 振り返り（実装後に記入）
 - 良かった点:
 - 詰まった点:
