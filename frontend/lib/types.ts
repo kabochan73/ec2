@@ -158,6 +158,18 @@ export type RegisterPayload = {
   password_confirmation: string;
 };
 
+// lib/addresses.ts の入力（backend/app/Http/Requests/Address/*Request のボディ形）。
+export type AddressPayload = {
+  recipient_name: string;
+  postal_code: string;
+  prefecture: string;
+  city: string;
+  address_line1: string;
+  address_line2?: string | null;
+  phone: string;
+  is_default?: boolean;
+};
+
 // ── Laravel Resource 対応の型（続き）─────────────────────────
 
 // backend/app/Http/Resources/OrderResource.php（POST /api/orders, GET /api/orders/{order_number}）
