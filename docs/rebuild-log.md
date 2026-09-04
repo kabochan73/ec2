@@ -127,6 +127,14 @@
 - マイグレーションのファイル名順で実行されるため、`product_images` が `products` より前に来ないよう timestamp を調整（`_i` < `_s` の罠）
 - 確認済み: `migrate:fresh` でクリーンに全テーブル作成、`\d` でスキーマ・FK・CHECK・index を確認
 
+**Step 7 — 2026-09-04 DB マイグレーション: users.role + addresses + orders 系**
+- `add_role_to_users`（`role` varchar(20) default `customer`、`password` の後）
+- `addresses`（`user_id` FK CASCADE、`is_default` default false。デフォルト1件の担保はアプリ側）
+- `orders`（`user_id` FK RESTRICT、`order_number` unique、`ship_*` スナップショット列、金額は int。`status` に `CHECK IN ('pending','cancelled')`。R3 で `paid`/`shipped` を足すときは制約を貼り直す migration を追加）
+- `order_items`（`order_id` FK CASCADE、`product_id` / `product_variant_id` は nullable FK SET NULL、表示用はスナップショット列、`quantity > 0` CHECK）
+- ここでも `order_items` が `orders` より前にソートされる罠を timestamp 調整で回避
+- 確認済み: `migrate:fresh` で全17テーブル作成、`\d` でスキーマ確認。DB スキーマ設計フェーズ完了（docs/02 の全テーブル）
+
 ### R2 振り返り（実装後に記入）
 - 良かった点:
 - 詰まった点:
