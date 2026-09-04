@@ -389,6 +389,18 @@
 ### F6（マイページ）完了
 ダッシュボード / 注文履歴・詳細 / 住所録 CRUD / プロフィール・パスワード変更。すべて `requireAuth` で保護。
 
+**Step F7a — 2026-09-04 チェックアウト（骨格 + 注文確定）**
+- `lib/types.ts` に `CreateOrderPayload`、`lib/orders.ts` に `createOrder`
+- `app/bff/orders/route.ts`（POST → 201。401 / 在庫不足の 422 + `unavailable` はそのまま中継）
+- `app/(shop)/checkout/page.tsx`（client）:
+  - 空カートは "Your Cart Is Empty"
+  - 配送先: `useQuery(['addresses'])` で住所録取得。デフォルト住所を初期選択、`+ Use A New Address` で新規入力（`Field` + `addressSchema`、`trigger()` で送信時のみ検証）+ 「Save To Address Book」チェック
+  - 注文内容の確認（数量変更は /cart。`useCartValidation` で売り切れ・在庫上限を表示）
+  - サマリー（Subtotal / Shipping / Total）、`PLACE ORDER`（在庫不足 or 検証中は無効）
+  - 成功 → `clearCart()` → `/checkout/complete?order=<番号>` へ push
+  - 422 の `unavailable` は該当明細に「在庫が不足しています」を表示
+- 確認（curl + CDP）: `POST /bff/orders`（address_id → 201、新規住所 + save_address → 201 で住所録 +1、在庫不足（qty 5 > stock 2）→ 422 + `unavailable: [{variant_id, available:2}]`、無認証 → 401）。CDP: デフォルト住所自動選択、PLACE ORDER → 注文作成 + カート空 + `/checkout/complete?order=` へ遷移（ページは F7b）。`tsc`/`lint` パス
+
 ### R2 振り返り（実装後に記入）
 - 良かった点:
 - 詰まった点:
