@@ -1,26 +1,30 @@
 @import "tailwindcss";
 
+/*
+ * デザイントークン（docs/00-overview.md / docs/08-frontend-design.md）。
+ * 配色はこの4色のみに固定する。ダークモード対応はしない
+ * （ブランドの統一されたモノトーン表現を崩さないため。Balenciaga 系のミニマルサイトは
+ *  基本的にライト/ダーク切り替えを持たない）。
+ */
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --color-ink: #000000; /* 基本の文字色・ボーダー・ボタン背景 */
+  --color-paper: #ffffff; /* 基本の背景 */
+  --color-mist: #f4f4f4; /* セクション背景・NO IMAGE のプレースホルダ（薄いグレー） */
+  --color-graphite: #767676; /* 補助テキスト（カテゴリラベル等） */
 }
 
+/* Tailwind v4 の CSS-first テーマ設定。bg-ink / text-graphite などのユーティリティが使えるようになる */
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
+  --color-ink: var(--color-ink);
+  --color-paper: var(--color-paper);
+  --color-mist: var(--color-mist);
+  --color-graphite: var(--color-graphite);
   --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background: var(--color-paper);
+  color: var(--color-ink);
+  /* 細いサンセリフ・字間広めが基調のデザインなので、body の既定を少し広げておく */
+  letter-spacing: 0.01em;
 }
