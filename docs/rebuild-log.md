@@ -245,6 +245,15 @@
 - 確認（PHP + curl）: 一覧は本人のみ・新しい順・item_count、詳細は自分のは 200（items 込み）、他人の注文番号→404、存在しない番号→404、無認証→401
 - これで docs/03 の注文エンドポイントは全部そろった（バックエンドの公開＋会員 API は管理を除き完成）
 
+---
+
+## フロントエンド実装フェーズ
+
+**Step F0 — 2026-09-04 フロントエンド設計**
+- `docs/08-frontend-design.md` を作成。ディレクトリ構成 / データ取得（Server Component 読み取り vs `/bff` Route Handler）/ 認証（Cookie `ec_token` + middleware）/ カート（zustand persist）/ 型は `lib/types.ts`・zod は `lib/schemas/` に集約 / スタイル（4色トークン・ダークモードなし）/ NO IMAGE 表示 / 実装 Step（F1〜F8）
+- R1 の反省を反映: ec1 は規約を後付けして「移行中」のまま終わったので、R2 は最初からその形で書く
+- ルートグループ `app/(shop)/`（Header/Footer 付き）、`app/bff/`（Route Handler）、`app/admin/`（後）に分ける
+
 ### R2 振り返り（実装後に記入）
 - 良かった点:
 - 詰まった点:

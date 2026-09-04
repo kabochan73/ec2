@@ -62,4 +62,5 @@ Balenciaga 公式サイトを参照した硬質なミニマル・モノトーン
 - `05-admin.md` — 管理者ページ（`/admin`）と画像ストレージ
 - `06-laravel-design.md` — Laravel 側の設計指針（レイヤー構成 / Action・Service / 命名規約）
 - `07-local-dev.md` — ローカル開発環境（すべて Docker、`docker compose up -d`）
+- `08-frontend-design.md` — フロントエンド設計（ディレクトリ構成 / データ取得 / 認証 / カート / スタイル）
 - `rebuild-log.md` — 各イテレーションの記録
