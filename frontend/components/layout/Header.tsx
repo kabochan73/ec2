@@ -13,12 +13,15 @@ import CartCount from "./CartCount";
 export default function Header() {
   return (
     <header className="fixed inset-x-0 top-0 z-50 border-b border-ink bg-paper text-ink">
-      <div className="flex h-16 items-center justify-between px-6">
-        <Link href="/" className="text-sm font-medium tracking-[0.2em] uppercase">
+      <div className="flex h-16 items-center justify-between px-4 sm:px-6">
+        <Link
+          href="/"
+          className="text-xs font-medium tracking-[0.15em] uppercase sm:text-sm sm:tracking-[0.2em]"
+        >
           EC-PORTFOLIO
         </Link>
 
-        <nav className="flex items-center gap-6 text-xs tracking-[0.15em] uppercase">
+        <nav className="flex items-center gap-4 text-xs tracking-[0.12em] uppercase sm:gap-6 sm:tracking-[0.15em]">
           <AccountLink />
           <CartCount />
         </nav>
