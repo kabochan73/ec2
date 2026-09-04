@@ -143,6 +143,14 @@
 - `make:enum Enums/Foo` がネストした `app/Enums/Enums/` を作る挙動だったので手書きに切替
 - 確認済み: `config:show shop` OK、tinker で `StockStatus::fromStock(0/3/4)` → `sold_out` / `low_stock` / `in_stock`
 
+**Step 8b — 2026-09-04 Eloquent モデル**
+- `Category` / `Product` / `ProductImage` / `ProductVariant` / `Address` / `Order` / `OrderItem` を作成、`User` を拡張
+- リレーション（`hasMany` / `belongsTo`）、`casts()`（`size_chart`→array、`is_published`→bool、`status`→`OrderStatus`、`role`→`UserRole`、金額→int）
+- `Product::scopePublished`（Laravel 12 の `#[Scope]` アトリビュート）
+- `User` / `Address` に `$attributes` で DB デフォルト（`role='customer'` / `is_default=false`）をミラー（create 直後の未再取得インスタンスで null にならないように）
+- `AppServiceProvider::boot()` に `Model::preventLazyLoading(! isProduction())`（dev で N+1 を例外化。docs/06 §4。ec1 では未導入だった）
+- 確認: tinker でリレーション・キャスト動作 OK。`preventLazyLoading` は**複数行のクエリ結果でのみ**発動する（Laravel 仕様: 単一モデルの遅延ロードは N+1 ではないので素通し）ことを確認
+
 ### R2 振り返り（実装後に記入）
 - 良かった点:
 - 詰まった点:
