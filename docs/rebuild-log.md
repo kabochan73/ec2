@@ -96,6 +96,16 @@
 - `GET /api/health`（DB 接続チェック込み）を追加。`curl localhost:8000/api/health` → `{"status":"ok","app":"EC-PORTFOLIO","database":"ok",...}`
 - serversideup の `8.4-fpm-nginx` に `intl` / `gd` / `bcmath` は非同梱と判明。R2 スコープでは未使用なので追加せず、docs 04 / 07 の記述を修正
 
+**Step 4 — 2026-09-04 frontend（Next.js 15）**
+- `create-next-app@15`（使い捨て `node:22-alpine` コンテナ、`--skip-install`）→ `frontend/`（Next 15.5.25 / React 19.1、App Router、TS、Tailwind v4、no src dir、turbopack）
+- 確定ライブラリを追加（`--package-lock-only` で lock 生成）: `zustand` / `@tanstack/react-query` / `react-hook-form` + `@hookform/resolvers` + `zod` / `@aws-sdk/client-s3` / `lucide-react`
+- `package.json` に `engines: node >=22 <23`、`frontend/.nvmrc`（22）
+- `next.config.ts`: `output: 'standalone'`（本番 Docker 用。dev には影響なし）
+- `frontend/Dockerfile.dev`（node:22-alpine、起動時に `npm install && npm run dev`）
+- `docker-compose.yml` に `frontend` サービス追加: `./frontend` マウント、`node_modules` は名前付きボリューム隔離、polling 有効（`WATCHPACK_POLLING` / `CHOKIDAR_USEPOLLING`）、`API_URL=http://backend:8080`
+- 確認済み: `docker compose up -d` で 4 コンテナ起動、`curl localhost:3000` → 200、`tsc --noEmit` / `npm run lint` パス
+- 初回 `npm install`（コンテナ内）は数分かかる。以降は名前付きボリュームにキャッシュされる
+
 ### R2 振り返り（実装後に記入）
 - 良かった点:
 - 詰まった点:
