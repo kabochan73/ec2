@@ -77,10 +77,15 @@
 ### 実装ログ
 
 **Step 1 — 2026-09-04 リポジトリ骨組み**
-- `git init`（ブランチ `main`）
+- `git init`（ブランチ `main`）。remote `origin` = `github.com/kabochan73/ec2`（push はユーザーが実施）
 - ルート設定: `.gitignore` / `.editorconfig`（2スペース、PHP のみ4）/ `.nvmrc`（Node 22）/ `README.md`
 - コミットは docs と骨組みで分割（`docs: 設計ドキュメント一式（R2）` / `chore: リポジトリ骨組み`）
-- 方針: 1コミット＝小さい単位で刻む（学習目的）
+- 方針: 1コミット＝小さい単位で刻む（学習目的）。push はユーザー、コミットまでが Claude
+
+**Step 2 — 2026-09-04 ローカルインフラ（db + minio）**
+- `docker-compose.yml`: db（postgres:16-alpine）/ minio（S3互換）/ createbuckets（`ec2-media` を自動作成する使い捨て）
+- backend / frontend はまだ入れない（Step 3 以降で serversideup/php・next dev を追加）
+- 確認済み: `docker compose up -d` で db・minio が healthy、`pg_isready` OK、`ec2-media` バケット作成成功（private）
 
 ### R2 振り返り（実装後に記入）
 - 良かった点:
