@@ -2,24 +2,20 @@
 
 namespace Database\Seeders;
 
-use App\Models\User;
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 
 class DatabaseSeeder extends Seeder
 {
-    use WithoutModelEvents;
-
     /**
      * Seed the application's database.
+     *
+     * 今は管理者アカウントのみ。
+     * - ダミー顧客は各自が手動投入（tinker / 管理画面）
+     * - categories は /admin のカテゴリ管理から作る方針なので Seeder を作らない
+     * - 商品シードは別途（画像なし・フロントで NO IMAGE 表示）
      */
     public function run(): void
     {
-        // User::factory(10)->create();
-
-        User::factory()->create([
-            'name' => 'Test User',
-            'email' => 'test@example.com',
-        ]);
+        $this->call(AdminUserSeeder::class);
     }
 }
