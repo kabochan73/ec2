@@ -9,6 +9,8 @@
 // キャッシュ制御・認証トークンの付与は、実際にその機能を作る Step で足していく。
 // ─────────────────────────────────────────────────────────────
 
+import { NextResponse } from "next/server";
+
 // Laravel のベース URL。
 // ローカル: http://backend:8080（compose ネットワーク内のコンテナ名。docker-compose.yml で注入）
 // 本番:     http://backend.railway.internal:8080（Railway 内部ネットワーク）
@@ -80,4 +82,19 @@ export async function apiFetch<T = unknown>(
   }
 
   return res.json() as Promise<T>;
+}
+
+/**
+ * BFF Route Handler（app/bff/**\/route.ts）向け。ApiError をそのまま
+ * Laravel と同じ形（{ message, errors } 等）・同じステータスでブラウザに返す。
+ * ApiError 以外は握りつぶさず投げ直す（想定外なので呼び出し元で気づけるように）。
+ */
+export function apiErrorResponse(error: unknown): NextResponse {
+  if (error instanceof ApiError) {
+    return NextResponse.json(
+      error.body ?? { message: error.message },
+      { status: error.status },
+    );
+  }
+  throw error;
 }

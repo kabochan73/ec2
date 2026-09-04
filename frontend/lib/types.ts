@@ -149,6 +149,15 @@ export type CartLineValidation = {
   available: boolean;
 };
 
+// lib/auth.ts の各関数の入力（backend/app/Http/Requests/Auth/* のボディ形と揃える）。
+export type LoginPayload = { email: string; password: string };
+export type RegisterPayload = {
+  name: string;
+  email: string;
+  password: string;
+  password_confirmation: string;
+};
+
 // ── Laravel Resource 対応の型（続き）─────────────────────────
 
 // backend/app/Http/Resources/OrderResource.php（POST /api/orders, GET /api/orders/{order_number}）
