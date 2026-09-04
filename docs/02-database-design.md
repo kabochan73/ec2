@@ -26,7 +26,7 @@ Laravel 標準テーブル（`users`, `password_reset_tokens`, `sessions`, `cach
 | position | integer | 表示順 |
 | created_at / updated_at | timestamp | |
 
-初期投入する4件（position 順）。**Seeder ではなく管理画面（`/admin` のカテゴリ管理）から作成する**（admin機能を実際に使って動作確認する目的）:
+初期投入する4件（position 順）。**`CategorySeeder` で作成する**（当初は「/admin から手動」方針だったが、商品 Seeder が category を必須とするため 2026-09-04 に変更）。admin のカテゴリ管理は「この4件を編集・並べ替え・5件目を追加」で動作確認する:
 
 | slug | name |
 |---|---|

@@ -44,7 +44,7 @@
 - ヘッダーはロゴ＋ACCOUNT/CART のみ。ナビ・検索なし。常に白背景・下ボーダー固定
 - `/about` は独立ページを持たず `/` トップページ内のセクションに統合
 - トップページの `BrandConcept`（理念）と `AboutSection`（沿革・素材・製造背景）は役割を分離する
-- categories の初期4件は Seeder ではなく管理画面（`/admin`）から作成する。商品・管理者ユーザーなど他のシードは Seeder で作成
+- categories の初期4件は当初「管理画面（`/admin`）から手動作成」方針だったが、商品 Seeder が category を必須とするため **`CategorySeeder` で作成に変更**（2026-09-04、Step 10）。admin のカテゴリ管理は「4件を編集・並べ替え・5件目追加」で動作確認する
 
 ### R2 での新しい決定（R1 から変更）
 
@@ -166,6 +166,19 @@
 - `DatabaseSeeder` はスキャフォールドの factory ユーザー生成を削除し `AdminUserSeeder` のみ呼ぶ
 - categories・商品・ダミー顧客の Seeder は作らない（categories は /admin から、顧客は手動、商品は別 Step）
 - 確認: `migrate:fresh --seed` で admin 1人（role=admin / verified）、`Hash::check('Takumi7355', ...)` OK、`db:seed` 再実行しても users は1件のまま
+
+**Step 10 — 2026-09-04 CategorySeeder + ProductSeeder**
+- `CategorySeeder`: Tops / Bottoms / Outerwear / Accessories（slug キーで `updateOrCreate`）
+- `ProductSeeder`: 開発・レビュー用カタログ 14点（Tops 4 / Bottoms 4 / Outerwear 3 / Accessories 3）
+  - 商品データは手書き（faker ではなくブランドの世界観に合わせた固定文）
+  - `size_chart`: Tops/Outerwear は 着丈・身幅・肩幅・袖丈、Bottoms は ウエスト・股上・股下・わたり幅・裾幅、Accessories は null
+  - variant: アパレル S/M/L、アクセサリー FREE 単一。sku = `{product_code}-{size}` で `updateOrCreate`（冪等）
+  - 在庫は SOLD OUT（`Heavyweight Long Sleeve Tee` L / `Wide Denim Pants` M / `Wool Knit Beanie`）・LOW STOCK（`Relaxed Tapered Trousers` S / `Wool Blend Coat` 全 / `Leather Card Holder`）を混ぜて表示確認用に
+  - `Ribbed Knit Polo` を `is_published=false`（published スコープ確認用）
+- **画像（product_images）は作らない**。フロントは画像ゼロなら "NO IMAGE"（グレー背景）を表示する（別 Step）
+- 方針変更: categories を Seeder で作る（docs/02 更新）
+- `DatabaseSeeder` は `AdminUserSeeder` → `CategorySeeder` → `ProductSeeder` の順で呼ぶ
+- 確認: `migrate:fresh --seed` で 4カテゴリ / 14商品（公開13）/ 36 variant、`db:seed` 再実行で件数不変（冪等）
 
 ### R2 振り返り（実装後に記入）
 - 良かった点:
