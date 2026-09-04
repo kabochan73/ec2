@@ -336,6 +336,14 @@
 - `middleware.ts`: `/checkout/:path*` `/account/:path*` を Cookie 有無でガード、未ログインは `/login?redirect=<元パス>`（307）。`/admin` は role 確認が要るので含めない
 - 確認（curl）: register 201 + `Set-Cookie ec_token`（HttpOnly / Max-Age=2592000）+ body に token 無し、`/bff/me`（cookie あり→user / なし→401）、重複メール→422 中継、login 200（role=admin）、login 失敗→422、logout 204 + Cookie 削除 → 以後 `/bff/me` 401、`/account`・`/checkout` 未ログイン→`/login?redirect=` へ 307、cookie あれば通過。`tsc`/`lint` パス
 
+**Step F5b-1 — 2026-09-04 認証フォーム（schemas + LoginForm / RegisterForm）**
+- `lib/schemas/login.ts` / `register.ts`（zod）: backend の `Auth/*Request` とルールを揃える。`registerSchema` は `.refine()` で `password_confirmation` 一致（Laravel の `confirmed` と二重防御）。スキーマファイルが `z.infer` 型（`LoginFormValues` / `RegisterFormValues`）も export（ec1 の `address.ts` の先例に合わせる）
+- `components/ui/Field.tsx`: ラベル + 下線入力 + エラー文の共通1フィールド。`forwardRef` で `register("x")` をそのまま spread できる形。login / register / F6 の profile / password / address で共用
+- `components/auth/LoginForm.tsx` / `RegisterForm.tsx`（client、react-hook-form + `zodResolver`）:
+  - 送信 → `fetch('/bff/login' | '/bff/register')` → 成功で `queryClient.invalidateQueries(['session'])`（AccountLink のキャッシュ破棄）→ `?redirect=` 先 or `/account` へ `router.push` + `refresh`
+  - 失敗（422）: login は汎用 `message`、register は `errors` の先頭フィールドメッセージ → 画面下に表示
+- 画面（`login/page.tsx` 等）と `AccountLink` の差し替えは F5b-2。F5b-1 単体では動作確認できない（`tsc`/`lint` パスのみ）
+
 ### R2 振り返り（実装後に記入）
 - 良かった点:
 - 詰まった点:
