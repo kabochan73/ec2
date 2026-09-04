@@ -22,7 +22,7 @@ export default function ProductMedia({ images, hoverSwap = false, name, sizes }:
   const hover = hoverSwap ? images.find((image) => image.position === 1) : undefined;
 
   return (
-    <div className="relative aspect-[3/4] overflow-hidden bg-mist">
+    <div className="relative aspect-3/4 overflow-hidden bg-mist">
       {primary ? (
         <>
           <Image

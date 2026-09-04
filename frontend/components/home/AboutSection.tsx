@@ -39,7 +39,7 @@ export default function AboutSection() {
           {BLOCKS.map((block) => (
             <div key={block.label} className="grid gap-12 md:grid-cols-2 md:items-center">
               <div
-                className={`aspect-[4/3] bg-mist ${block.imageRight ? "md:order-2" : ""}`}
+                className={`aspect-4/3 bg-mist ${block.imageRight ? "md:order-2" : ""}`}
               />
               <div className={block.imageRight ? "md:order-1" : ""}>
                 <p className="text-[11px] tracking-widest text-graphite uppercase">
