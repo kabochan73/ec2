@@ -302,6 +302,15 @@
 - 商品詳細ページの配送囲みとアコーディオンの間に `<VariantSelector>` を差し込み
 - 確認（CDP 自動操作）: S 選択 → ADD TO CART 有効化 → クリックで CART (0)→(1)、`Added` 表示、localStorage に正しいスナップショット、同 variant 再追加で (1)→(2)（行は増えず数量加算）。`heavyweight-long-sleeve-tee` は L が打ち消し線・S に (LOW STOCK)。`tsc`/`lint` パス
 
+**Step F4a — 2026-09-04 カートページ（骨格）+ QueryProvider**
+- `components/providers/QueryProvider.tsx`: `QueryClientProvider`（`useState` で `QueryClient` を1回だけ生成）。`app/layout.tsx`（root）で `<CartHydration>` ごと包む。クライアント主体の読み書き（カート再検証 F4b / AccountLink F5 / account CRUD F6）で使う
+- `app/(shop)/cart/page.tsx`（client）:
+  - 空カート: `YOUR CART IS EMPTY` + `CONTINUE SHOPPING`
+  - 明細行: NO IMAGE サムネ / 商品名（詳細リンク）・サイズ（・色）・単価 / 数量ステッパー（`−` は 1 で無効）/ Remove / 行合計
+  - サマリー: `SUBTOTAL` / `SHIPPING`（`FREE_SHIPPING_THRESHOLD` 以上で Free）/ `TOTAL` / `CHECKOUT`
+  - 金額は「追加時のスナップショット」。在庫再検証（売り切れ警告・在庫上限・価格変動・CHECKOUT ガード）は F4b
+- 確認（CDP）: 空カート 200、M×2 + FREE×1 追加 → 2行・CART (3)・Subtotal ¥52,000・Shipping Free、ステッパー `+` で CART (3)→(4)、Remove で行削除 + ヘッダー同期。`tsc`/`lint` パス
+
 ### R2 振り返り（実装後に記入）
 - 良かった点:
 - 詰まった点:
