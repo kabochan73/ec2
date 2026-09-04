@@ -1,7 +1,9 @@
 <?php
 
+use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\CategoryController;
 use App\Http\Controllers\Api\ProductController;
+use App\Http\Controllers\Api\ProfileController;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Route;
 
@@ -28,3 +30,15 @@ Route::get('/categories', [CategoryController::class, 'index']);
 Route::get('/products', [ProductController::class, 'index']);
 // {product:slug} … Product モデルの既定キーは id のまま、このルートだけ slug でバインドする
 Route::get('/products/{product:slug}', [ProductController::class, 'show']);
+
+// --- 認証（公開） ---
+Route::post('/register', [AuthController::class, 'register']);
+// throttle:login … メール＋IP で 5回/分（AppServiceProvider で定義したレートリミッタ）
+Route::post('/login', [AuthController::class, 'login'])->middleware('throttle:login');
+
+// --- 認証必須 ---
+Route::middleware('auth:sanctum')->group(function () {
+    Route::post('/logout', [AuthController::class, 'logout']);
+
+    Route::get('/me', [ProfileController::class, 'show']);
+});
