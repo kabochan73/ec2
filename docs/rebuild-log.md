@@ -377,6 +377,18 @@
 - 確認（curl 全経路 + CDP）: GET 1件、POST 201（郵便番号不正は 422 中継）、追加後 2件、Set As Default で `is_default` が入れ替わり一覧先頭に、PUT 200、DELETE 204 で 1件に、無認証 401。`tsc`/`lint` パス
 - docs/08 §3.2 の「/account の CRUD は react-query」は緩め、共有・複雑な状態が要る場合に限定（AddressBook は単純なので不使用）
 
+**Step F6-4 — 2026-09-04 プロフィール（/account/profile）。F6 完了**
+- `lib/schemas/profile.ts` / `password.ts`（zod）。`lib/types.ts` に `UpdateProfilePayload` / `UpdatePasswordPayload`
+- `lib/auth.ts` に `updateProfile` / `updatePassword`
+- BFF: `app/bff/me/route.ts` に `PUT` を追加、`app/bff/me/password/route.ts`（PUT → 204）
+- `components/account/ProfileForm.tsx`（`Field` 使用。成功時 `setQueryData(['session'], body)` でヘッダーにも反映）/ `PasswordForm.tsx`（`Field` 使用、成功時 `reset()`）
+- `app/(shop)/account/profile/page.tsx`: `requireAuth` → `ProfileForm` + `PasswordForm`
+- 確認（curl + CDP）: PUT /bff/me 200（他人のメール → 422 中継）、PUT /bff/me/password 204（新 pw でログイン可、current 誤り → 422 `errors.current_password`）、フォーム初期値・"Profile updated"・エラー表示。`tsc`/`lint` パス
+- 既知: `current_password` 誤りのメッセージが Laravel 標準の英語（"The password is incorrect."）。他は日本語。`UpdatePasswordRequest::messages()` で揃えるのは F8
+
+### F6（マイページ）完了
+ダッシュボード / 注文履歴・詳細 / 住所録 CRUD / プロフィール・パスワード変更。すべて `requireAuth` で保護。
+
 ### R2 振り返り（実装後に記入）
 - 良かった点:
 - 詰まった点:
