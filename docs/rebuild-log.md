@@ -114,6 +114,19 @@
 ### 環境構築フェーズ 完了（Step 1〜5）
 ローカルで「ブラウザ → Next.js → Laravel → PostgreSQL」＋ MinIO が `docker compose up -d` だけで動く状態。次から機能実装（DB マイグレーション設計 → 商品閲覧…）。
 
+---
+
+## 機能実装フェーズ
+
+**Step 6 — 2026-09-04 DB マイグレーション: categories + product 系**
+- `categories`（`name` / `slug` unique / `position`）。初期4件は Seeder ではなく `/admin` から作る方針をコメントに明記
+- `products`（`category_id` FK RESTRICT、`slug` unique、`size_chart` jsonb nullable、`is_published` default true、`(is_published, position)` index、`price > 0` CHECK）
+- `product_images`（`product_id` FK CASCADE、`path`、`(product_id, position)` index）
+- `product_variants`（`product_id` FK CASCADE、`sku` unique、`stock >= 0` CHECK）
+  - `UNIQUE(product_id, size, color)` に加え、`color IS NULL` 用の部分 UNIQUE インデックスを別途作成（Postgres は NULL 同士を等価に扱わないため、単一色商品の重複を通常の UNIQUE では防げない）
+- マイグレーションのファイル名順で実行されるため、`product_images` が `products` より前に来ないよう timestamp を調整（`_i` < `_s` の罠）
+- 確認済み: `migrate:fresh` でクリーンに全テーブル作成、`\d` でスキーマ・FK・CHECK・index を確認
+
 ### R2 振り返り（実装後に記入）
 - 良かった点:
 - 詰まった点:
