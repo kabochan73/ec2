@@ -139,6 +139,16 @@ export type CartItem = {
   imageUrl: string;
 };
 
+// lib/hooks/useCartValidation.ts — カート明細1行の「今の本当の状態」。
+export type CartLineValidation = {
+  /** null = まだ取得中 */
+  currentStock: number | null;
+  /** null = まだ取得中 or 商品が消えている */
+  currentPrice: number | null;
+  /** 商品が 404（削除・未公開）/ variant が無い / 在庫0 のいずれかなら false */
+  available: boolean;
+};
+
 // ── Laravel Resource 対応の型（続き）─────────────────────────
 
 // backend/app/Http/Resources/OrderResource.php（POST /api/orders, GET /api/orders/{order_number}）
