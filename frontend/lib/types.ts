@@ -123,6 +123,24 @@ export type OrderItem = {
   line_total: number;
 };
 
+// ── フロント内部の型（Laravel Resource と対応しないもの） ──────────
+
+// lib/stores/cart.ts のカート明細1行分。
+// 「追加した時点の表示スナップショット」なので、ここの値は表示の初期値でしかない
+// （/cart 表示時に API で在庫・価格を再検証する）。
+export type CartItem = {
+  variantId: number;
+  productSlug: string;
+  productName: string;
+  size: string;
+  color: string | null;
+  unitPrice: number;
+  quantity: number;
+  imageUrl: string;
+};
+
+// ── Laravel Resource 対応の型（続き）─────────────────────────
+
 // backend/app/Http/Resources/OrderResource.php（POST /api/orders, GET /api/orders/{order_number}）
 export type OrderDetail = {
   order_number: string;

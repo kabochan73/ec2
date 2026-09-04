@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 
 import ProductCard from "@/components/product/ProductCard";
 import ProductMedia from "@/components/product/ProductMedia";
+import VariantSelector from "@/components/product/VariantSelector";
 import { getProduct } from "@/lib/products";
 
 type PageProps = {
@@ -58,7 +59,18 @@ export default async function ProductDetailPage({ params }: PageProps) {
             Shipping: 3–5 Business Days
           </div>
 
-          {/* F3b: ここに VariantSelector（色スウォッチ / サイズセレクタ / ADD TO CART）が入る */}
+          {/* 色スウォッチ / サイズセレクタ / ADD TO CART。状態を持つので Client Component */}
+          <div className="mt-8">
+            <VariantSelector
+              productSlug={product.slug}
+              productName={product.name}
+              price={product.price}
+              imageUrl={product.images[0]?.url ?? ""}
+              colors={product.colors}
+              variants={product.variants}
+            />
+          </div>
+
 
           {/* アコーディオンは JS 不要の <details> で実装（CC 化を避ける） */}
           <div className="mt-10 divide-y divide-ink border-t border-b border-ink">

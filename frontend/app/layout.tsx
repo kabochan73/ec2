@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import { Geist } from "next/font/google";
 
+import CartHydration from "@/components/providers/CartHydration";
+
 import "./globals.css";
 
 // 「細いサンセリフ」の基調フォント。Geist は細いウェイトも揃っているのでこのまま使う。
@@ -29,6 +31,8 @@ export default function RootLayout({
       {/* 個別のレイアウト（(shop) / admin）は children 側に入る。
           ここは <html><body> のシェルとフォント・globals だけを持つ。 */}
       <body className={`${geistSans.variable} font-sans antialiased`}>
+        {/* カートストア（localStorage）の復元をマウント後に走らせる。何も描画しない。 */}
+        <CartHydration />
         {children}
       </body>
     </html>
