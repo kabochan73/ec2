@@ -53,6 +53,8 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::delete('/addresses/{address}', [AddressController::class, 'destroy']);
     Route::post('/addresses/{address}/default', [AddressController::class, 'setDefault']);
 
-    // --- 注文（本人のもののみ） ---
+    // --- 注文（本人のもののみ。他人の注文番号は 404） ---
     Route::post('/orders', [OrderController::class, 'store']);
+    Route::get('/orders', [OrderController::class, 'index']);
+    Route::get('/orders/{orderNumber}', [OrderController::class, 'show']);
 });
