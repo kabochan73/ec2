@@ -226,6 +226,17 @@
 - 確認（PHP + curl スクリプト）: store（1件目 is_default=false、2件目 is_default=true で1件目が false 化）、index は default 先頭、setDefault で入れ替わり、他人が update/delete → 404、`postal_code` 形式不正 → 422、削除 204
 - デフォルト住所を削除しても他への自動昇格はしない（docs/03 に明記なし）
 
+**Step 14a — 2026-09-04 注文作成 API（POST /api/orders）**
+- DTO: `CartLineInput` / `ShippingAddressInput`（addresses 用と orders.ship_* 用の両方に変換）/ `CreateOrderInput`（`fromRequest()`）
+- Domain: `ShippingFeeCalculator`（`config('shop.*')` 参照）/ `OrderNumberGenerator`（`EC-YYYYMMDD-NNNN`、当日連番を `lockForUpdate` で採番）
+- Exception: `InsufficientStockException`（422 + `unavailable: [{variant_id, available}]`）/ `UnpublishedProductException`（422）。どちらも `render()` を持つので自動でハンドリングされる
+- `CreateOrder` Action（`DB::transaction` 内）: variant を `lockForUpdate` → 在庫検証 → 未公開検証 → subtotal サーバー再計算 → 送料 → `order_number` 採番 → orders / order_items 作成 → `decrement('stock')` → 新規住所を save_address なら addresses にも
+- `StoreOrderRequest`: 形式的検証のみ（`items.*.variant_id` exists、`quantity` max=config、`address_id` は `Rule::exists->where('user_id', ...)` で本人のもの、`address_id` / `address` は `required_without` で片方必須）
+- `OrderResource` / `OrderItemResource`、`OrderController@store`（201）
+- 確認（PHP + curl）: 正常注文 201（`EC-20260904-0001`、subtotal 27000 / 送料0 / 在庫 8→6・12→11）、売り切れ→422（unavailable 返る・在庫据え置き）、未公開→422、新規住所+save_address で addresses が 1→2、他人の address_id→422、address なし→422
+- `image_url` は画像なし商品では空文字（`order_items.image_url` は NOT NULL）
+- `GET /api/orders`（一覧）・`GET /api/orders/{number}`（詳細）は Step 14b
+
 ### R2 振り返り（実装後に記入）
 - 良かった点:
 - 詰まった点:
