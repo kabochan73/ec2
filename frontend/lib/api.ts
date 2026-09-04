@@ -6,14 +6,31 @@
 // ブラウザから import して使うと API_URL が undefined になる
 // （NEXT_PUBLIC_ が付いていない環境変数はクライアントに渡らない）。
 //
-// いまは疎通確認用の最小実装。キャッシュ制御・エラー型（ApiError）・
-// 認証トークンの付与などは、実際にその機能を作る Step で足していく。
+// キャッシュ制御・認証トークンの付与は、実際にその機能を作る Step で足していく。
 // ─────────────────────────────────────────────────────────────
 
 // Laravel のベース URL。
 // ローカル: http://backend:8080（compose ネットワーク内のコンテナ名。docker-compose.yml で注入）
 // 本番:     http://backend.railway.internal:8080（Railway 内部ネットワーク）
 const API_URL = process.env.API_URL;
+
+/**
+ * Laravel が非 2xx を返したときに投げる例外。
+ * - status … 呼び出し側が「404 だけ notFound() にしたい」等の分岐に使う
+ * - body … Laravel が返した JSON をパースしたもの（422 の { message, errors } 等）。
+ *   BFF Route Handler がこれをそのままブラウザに中継すれば、フォーム側で
+ *   フィールドごとのエラーメッセージを表示できる（F5 以降）
+ */
+export class ApiError extends Error {
+  constructor(
+    public readonly status: number,
+    message: string,
+    public readonly body?: unknown,
+  ) {
+    super(message);
+    this.name = "ApiError";
+  }
+}
 
 /**
  * Laravel API を叩いて JSON を返す。
@@ -36,15 +53,24 @@ export async function apiFetch<T = unknown>(
       Accept: "application/json",
       ...init?.headers,
     },
-    // 個人化データやヘルスチェックは毎回最新を取りに行く。
-    // キャッシュに乗せたい読み取り（商品一覧など）は後の Step でオプションを足す。
+    // 個人化データやヘルスチェックは毎回最新。
+    // カタログの ISR（next: { tags }）は管理画面フェーズで足す。
     cache: "no-store",
   });
 
   if (!res.ok) {
+    // Laravel のエラーレスポンスは基本 JSON なのでパースを試み、失敗したら生テキスト
     const text = await res.text();
-    throw new Error(
+    let body: unknown = text;
+    try {
+      body = JSON.parse(text);
+    } catch {
+      // JSON でなければ生テキストのまま
+    }
+    throw new ApiError(
+      res.status,
       `API ${path} が ${res.status} を返しました: ${text.slice(0, 200)}`,
+      body,
     );
   }
 

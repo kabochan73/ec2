@@ -1,7 +1,7 @@
 // 商品の取得（読み取りなので Server Component から直接呼ぶ。docs/08 §3.1）。
 // .tsx にこのロジックを直書きせず、ここに集約する。
 
-import { apiFetch } from "@/lib/api";
+import { apiFetch, ApiError } from "@/lib/api";
 import type { ApiCollection, ApiResource, ProductDetail, ProductSummary } from "@/lib/types";
 
 type ProductListParams = {
@@ -30,10 +30,18 @@ export async function getProducts(params: ProductListParams = {}): Promise<Produ
 }
 
 /**
- * GET /api/products/{slug} — 商品詳細。未公開・存在しない slug は apiFetch が
- * 404 で throw する（呼び出し側で notFound() に変換する。F3）。
+ * GET /api/products/{slug} — 商品詳細。
+ * 未公開・存在しない slug は 404 → null を返す（ページ側で notFound() に変換する）。
+ * それ以外のエラーはそのまま throw する。
  */
-export async function getProduct(slug: string): Promise<ProductDetail> {
-  const { data } = await apiFetch<ApiResource<ProductDetail>>(`/api/products/${slug}`);
-  return data;
+export async function getProduct(slug: string): Promise<ProductDetail | null> {
+  try {
+    const { data } = await apiFetch<ApiResource<ProductDetail>>(`/api/products/${slug}`);
+    return data;
+  } catch (error) {
+    if (error instanceof ApiError && error.status === 404) {
+      return null;
+    }
+    throw error;
+  }
 }
