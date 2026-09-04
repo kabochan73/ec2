@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Geist } from "next/font/google";
 
 import CartHydration from "@/components/providers/CartHydration";
+import QueryProvider from "@/components/providers/QueryProvider";
 
 import "./globals.css";
 
@@ -31,9 +32,13 @@ export default function RootLayout({
       {/* 個別のレイアウト（(shop) / admin）は children 側に入る。
           ここは <html><body> のシェルとフォント・globals だけを持つ。 */}
       <body className={`${geistSans.variable} font-sans antialiased`}>
-        {/* カートストア（localStorage）の復元をマウント後に走らせる。何も描画しない。 */}
-        <CartHydration />
-        {children}
+        {/* QueryProvider は CC だが、children（(shop)/admin レイアウトや各ページ）は
+            SC のままレンダーされる（React の children 合成パターン）。 */}
+        <QueryProvider>
+          {/* カートストア（localStorage）の復元をマウント後に走らせる。何も描画しない。 */}
+          <CartHydration />
+          {children}
+        </QueryProvider>
       </body>
     </html>
   );
