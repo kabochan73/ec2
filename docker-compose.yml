@@ -3,8 +3,8 @@
 # （docs/07-local-dev.md）。ただし一度に全部は作らず、段階的に足していく:
 #
 #   Step 2 : db / minio だけ。まず疎通を確認する
-#   Step 3 : backend（serversideup/php）を追加  ← いまここ
-#   Step 4 : frontend（next dev）を追加
+#   Step 3 : backend（serversideup/php）を追加
+#   Step 4 : frontend（next dev）を追加  ← いまここ
 #
 # 使い方:
 #   docker compose up -d        # 起動
@@ -79,6 +79,29 @@ services:
       minio:
         condition: service_healthy
 
+  # ── frontend（Next.js / next dev）───────────────────────────
+  # ブラウザが触れる唯一のサーバー（BFF）。ソースをマウントしてホットリロード。
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile.dev
+    container_name: ec2-frontend
+    volumes:
+      - ./frontend:/app
+      # node_modules はホストと共有しない（OS 差・パフォーマンス対策）。名前付きボリュームに隔離
+      - ec2-frontend-node_modules:/app/node_modules
+    environment:
+      # Mac の Docker Desktop はファイル変更検知が効かないことがあるので polling を有効化
+      WATCHPACK_POLLING: "true"
+      CHOKIDAR_USEPOLLING: "true"
+      # サーバー側（Route Handler / Server Component）から Laravel を呼ぶ先。コンテナ名で解決
+      API_URL: "http://backend:8080"
+      NEXT_PUBLIC_SITE_URL: "http://localhost:3000"
+    ports:
+      - "3000:3000"
+    depends_on:
+      - backend
+
   # ── バケット初期化（使い捨て）─────────────────────────────
   # minio が healthy になったら 1 回だけ実行してバケットを作る。
   # 本番の Railway バケットは private なので、ここでも公開設定はしない
@@ -101,3 +124,4 @@ services:
 volumes:
   ec2-pgdata:
   ec2-minio:
+  ec2-frontend-node_modules:
