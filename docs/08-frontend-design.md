@@ -34,14 +34,19 @@ frontend/
 │   ├── globals.css               # Tailwind + デザイントークン
 │   ├── (shop)/                   # ストアフロント。Header/Footer 付き共通レイアウト
 │   │   ├── layout.tsx            #   <Header/> {children} <Footer/>
-│   │   ├── page.tsx              #   /  トップ
-│   │   ├── products/[slug]/page.tsx
-│   │   ├── cart/page.tsx
-│   │   ├── checkout/page.tsx
-│   │   ├── checkout/complete/page.tsx
-│   │   ├── login/page.tsx
-│   │   ├── register/page.tsx
-│   │   └── account/…             #   ダッシュボード / orders / addresses / profile
+│   │   ├── not-found.tsx
+│   │   ├── (catalog)/            #   URL には出ないグループ分け（整理目的のみ）
+│   │   │   ├── page.tsx          #     /  トップ
+│   │   │   └── products/[slug]/page.tsx
+│   │   ├── (cart)/
+│   │   │   ├── cart/page.tsx
+│   │   │   ├── checkout/page.tsx
+│   │   │   └── checkout/complete/page.tsx
+│   │   ├── (auth)/
+│   │   │   ├── login/page.tsx
+│   │   │   └── register/page.tsx
+│   │   └── (account)/
+│   │       └── account/…         #   ダッシュボード / orders / addresses / profile
 │   ├── admin/                    # 管理画面。独自レイアウト（後のフェーズ）
 │   └── bff/                      # Route Handler 群（ブラウザが叩く。レイアウト無し）
 │       ├── login/route.ts  register/route.ts  logout/route.ts
