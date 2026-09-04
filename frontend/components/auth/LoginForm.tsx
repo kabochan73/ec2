@@ -9,6 +9,7 @@ import { useForm } from "react-hook-form";
 
 import Field from "@/components/ui/Field";
 import { loginSchema, type LoginFormValues } from "@/lib/schemas/login";
+import type { ApiResource, User } from "@/lib/types";
 
 export default function LoginForm() {
   const router = useRouter();
@@ -38,8 +39,10 @@ export default function LoginForm() {
       return;
     }
 
-    // AccountLink が「未ログイン」をキャッシュしているので作り直させる
-    await queryClient.invalidateQueries({ queryKey: ["session"] });
+    // 取得済みの user で AccountLink の ["session"] キャッシュを直接更新する
+    // （refetch を待たずに済むので、この直後の遷移で ACCOUNT リンクが正しくなる）
+    const body = (await res.json()) as ApiResource<User>;
+    queryClient.setQueryData(["session"], body);
 
     router.push(searchParams.get("redirect") || "/account");
     router.refresh();

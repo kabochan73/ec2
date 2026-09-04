@@ -9,6 +9,7 @@ import { useForm } from "react-hook-form";
 
 import Field from "@/components/ui/Field";
 import { registerSchema, type RegisterFormValues } from "@/lib/schemas/register";
+import type { ApiResource, User } from "@/lib/types";
 
 export default function RegisterForm() {
   const router = useRouter();
@@ -41,7 +42,9 @@ export default function RegisterForm() {
       return;
     }
 
-    await queryClient.invalidateQueries({ queryKey: ["session"] });
+    // 取得済みの user で AccountLink の ["session"] キャッシュを直接更新する
+    const body = (await res.json()) as ApiResource<User>;
+    queryClient.setQueryData(["session"], body);
 
     router.push(searchParams.get("redirect") || "/account");
     router.refresh();
