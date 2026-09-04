@@ -319,7 +319,9 @@ enum StockStatus: string
 }
 ```
 
-R2 で作る Enum: `OrderStatus`（`pending` / `cancelled`）、`StockStatus`、`UserRole`（`customer` / `admin`）、`ProductSize`（`S` / `M` / `L` / `FREE`）。
+R2 で作る Enum: `OrderStatus`（`pending` / `cancelled`）、`StockStatus`、`UserRole`（`customer` / `admin`）。
+
+`StockStatus` は上記サンプルより絞り、`fromStock()`（判定ロジック）だけ持たせる。`label()` / `selectable()` の UI 文字列はフロント側の担当（API は value のみ返す）。`ProductSize` は `product_variants.size` を文字列のまま扱えば足りるので作らない（「予測で作らない」§0。必要になったら追加）。
 
 ---
 
@@ -416,8 +418,7 @@ app/
 ├── Enums/
 │   ├── OrderStatus.php
 │   ├── StockStatus.php
-│   ├── UserRole.php
-│   └── ProductSize.php
+│   └── UserRole.php
 ├── Http/
 │   ├── Controllers/Api/
 │   │   └── Admin/

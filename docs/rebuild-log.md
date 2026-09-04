@@ -135,6 +135,14 @@
 - ここでも `order_items` が `orders` より前にソートされる罠を timestamp 調整で回避
 - 確認済み: `migrate:fresh` で全17テーブル作成、`\d` でスキーマ確認。DB スキーマ設計フェーズ完了（docs/02 の全テーブル）
 
+**Step 8a — 2026-09-04 Enum + config/shop.php**
+- `config/shop.php`: マジックナンバー集約（`low_stock_threshold` / `new_product_days` / `shipping_fee` / `free_shipping_threshold` / `cart_max_quantity_per_line`）
+- `app/Enums/UserRole`（`customer` / `admin`）、`OrderStatus`（`pending` / `cancelled`）、`StockStatus`（`sold_out` / `low_stock` / `in_stock` ＋ `fromStock()`）
+- `StockStatus` は `fromStock()` のみ。`label()` / `selectable()` の UI 文字列はフロント担当（API は value のみ返す。ec1 と同方針）
+- `ProductSize` enum は作らない（`size` は文字列のまま。「予測で作らない」）。docs/06 の記述もそれに合わせて修正
+- `make:enum Enums/Foo` がネストした `app/Enums/Enums/` を作る挙動だったので手書きに切替
+- 確認済み: `config:show shop` OK、tinker で `StockStatus::fromStock(0/3/4)` → `sold_out` / `low_stock` / `in_stock`
+
 ### R2 振り返り（実装後に記入）
 - 良かった点:
 - 詰まった点:
