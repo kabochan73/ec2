@@ -344,6 +344,13 @@
   - 失敗（422）: login は汎用 `message`、register は `errors` の先頭フィールドメッセージ → 画面下に表示
 - 画面（`login/page.tsx` 等）と `AccountLink` の差し替えは F5b-2。F5b-1 単体では動作確認できない（`tsc`/`lint` パスのみ）
 
+**Step F5b-2 — 2026-09-04 ログイン/登録の画面 + AccountLink**
+- `app/(shop)/login/page.tsx` / `register/page.tsx`: `<Suspense>` で `LoginForm` / `RegisterForm` を包むだけ（`useSearchParams` を使うため）。metadata で `title`
+- `components/layout/AccountLink.tsx`: 静的 → client 化。`useQuery(['session'])` で `/bff/me` を見て、ログイン中は `/account`・未ログインは `/login` にリンク。`staleTime: 60s`
+- **`invalidateQueries` の `await` がハングする問題**に当たり、`queryClient.setQueryData(['session'], body)` に変更（フォームは既に user を持っているので refetch 不要。遷移直後に ACCOUNT リンクが正しくなる）
+- 確認（CDP）: `/login?redirect=/cart` でログイン → `/cart` に遷移、ヘッダー ACCOUNT が `/account` に、`/bff/logout` 後は `/login` に戻る、ログイン失敗は `/login` のまま + エラー文表示、register も同様に遷移。`tsc`/`lint` パス
+- 既知: `/account`・`/checkout` はまだルートが無い（F6/F7）ので redirect 先が Next の素の 404 になる。ルート作成後に `(shop)/not-found` 経由の表示になる。ルート `app/not-found.tsx` は F8 で追加
+
 ### R2 振り返り（実装後に記入）
 - 良かった点:
 - 詰まった点:
