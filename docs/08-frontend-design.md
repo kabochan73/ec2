@@ -84,7 +84,7 @@ frontend/
 
 - Client Component が `fetch('/bff/...')` を叩く。`app/bff/**/route.ts` が Cookie のトークンを取り出して `lib/<domain>.ts` の関数に渡し、そこで `Authorization: Bearer` を付けて Laravel へ。
 - Route Handler 本体は「body を読む → lib の関数を呼ぶ → Cookie 操作 → JSON を返す」だけの数行。
-- `@tanstack/react-query` を使うのは **クライアント主体の読み書きだけ**（`/account` の CRUD、カートの在庫再検証、後の `/admin` テーブル）。
+- `@tanstack/react-query` を使うのは **クライアント主体の読み書きで、キャッシュ共有や複雑な状態管理が要るもの**（ログイン状態の `AccountLink`、カートの在庫再検証、後の `/admin` テーブル）。`/account` の住所録 CRUD のように「一覧が他画面と共有されず、成功後に丸ごと取り直せば済む」ものは、ローカル state + 手書き `fetch` の方がシンプルで、そちらを使う。
 
 ### 3.3 Laravel の 422 をフォームに出す
 

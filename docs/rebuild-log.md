@@ -367,6 +367,16 @@
 - 確認（CDP、`Network.setCookie` でログイン）: 一覧2件・日付・点数・ステータス、詳細（明細・金額・配送先）、他人の注文番号 → 404、存在しない番号 → 404。`tsc`/`lint` パス
 - 既知: `OrderItemFactory` はダミーの `image_url` パスを生成するので、Factory 由来の注文詳細では画像が 404 で崩れる。実注文（F7 チェックアウト経由、seed 商品は画像なし）では空文字 → "No Image" になるので実害なし。気になれば F8 で Factory を調整
 
+**Step F6-3 — 2026-09-04 住所録（/account/addresses）**
+- `lib/addresses.ts`（サーバー専用）: `fetchAddresses` / `createAddress` / `updateAddress` / `deleteAddress` / `setDefaultAddress`
+- `lib/schemas/address.ts`（zod、`postal_code` は `123-4567` 形式）。`lib/types.ts` に `AddressPayload`
+- BFF: `app/bff/addresses/route.ts`（GET / POST）、`[id]/route.ts`（PUT / DELETE）、`[id]/default/route.ts`（POST）。各ルート先頭で `getSessionToken` → 無ければ 401
+- `components/account/AddressForm.tsx`: `Field` 共通コンポーネントで組む。編集時は `defaultValues`。`is_default` は扱わない
+- `components/account/AddressBook.tsx`（client）: 一覧 + 追加 + 編集 + 削除 + Set As Default。**react-query は使わず** ローカル state + 「操作成功後に `/bff/addresses` を丸ごと再取得」（一覧が他画面と共有されない・`is_default` 排他の副作用を確実に反映するため）。`router.refresh()` で /checkout の住所選択にも波及
+- `app/(shop)/account/addresses/page.tsx`: `requireAuth` → `fetchAddresses` → `<AddressBook>`
+- 確認（curl 全経路 + CDP）: GET 1件、POST 201（郵便番号不正は 422 中継）、追加後 2件、Set As Default で `is_default` が入れ替わり一覧先頭に、PUT 200、DELETE 204 で 1件に、無認証 401。`tsc`/`lint` パス
+- docs/08 §3.2 の「/account の CRUD は react-query」は緩め、共有・複雑な状態が要る場合に限定（AddressBook は単純なので不使用）
+
 ### R2 振り返り（実装後に記入）
 - 良かった点:
 - 詰まった点:
