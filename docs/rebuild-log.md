@@ -357,7 +357,15 @@
 - `app/(shop)/account/page.tsx`: `requireAuth("/account")` → `fetchOrders` → ダッシュボード（`Welcome, {name}` / Recent Order 1件 or "No orders yet" / メニュー Orders・Addresses・Profile・Logout）
 - `components/account/LogoutButton.tsx`（client）: `/bff/logout` → `setQueryData(['session'], null)` → `router.replace('/')` + `refresh`
 - 確認（CDP、ルート pre-warm 後）: 未ログイン `/account` → `/login?redirect=%2Faccount`、register → `/account` に "Welcome, Account Taro" / "No orders yet" / メニュー3件 + Logout、Logout → ACCOUNT リンクが `/login` に戻る、以後 `/account` 再訪で `/login` へ。`tsc`/`lint` パス
-- テスト tips: dev サーバーは初回ルートコンパイルが重く、CDP テストで待ち時間不足の false fail が出る。テスト前に `curl` でルートを pre-warm し、submit 後は 6〜7秒待つ
+- テスト tips: dev サーバーは初回ルートコンパイルが重く、CDP テストで待ち時間不足の false fail が出る。テスト前に `curl` でルートを pre-warm し、submit 後は 6〜7秒待つ。フォームログインが不安定なテストは `Network.setCookie` で `ec_token` を直接セットして回避
+
+**Step F6-2 — 2026-09-04 注文履歴・注文詳細**
+- `lib/orders.ts` の `fetchOrderDetail`（throw）を `findOrder`（404 → null）に。ページ側で `notFound()`
+- `app/(shop)/account/orders/page.tsx`: `requireAuth` → `fetchOrders` → 一覧（番号 / 日付 / 点数 / 合計 / ステータス、行クリックで詳細へ）。0件は "No orders yet."
+- `app/(shop)/account/orders/[number]/page.tsx`: `requireAuth` → `findOrder` → 詳細（パンくず / 番号 + ステータス / 日時 / 明細 / 金額（Subtotal・Shipping・Total）/ 配送先スナップショット）。`generateMetadata` で `title` に注文番号。他人・存在しない番号は 404
+  - `order_items.image_url` が空文字の場合（＝画像ゼロ商品の実注文）は "No Image"、非空なら `next/image`
+- 確認（CDP、`Network.setCookie` でログイン）: 一覧2件・日付・点数・ステータス、詳細（明細・金額・配送先）、他人の注文番号 → 404、存在しない番号 → 404。`tsc`/`lint` パス
+- 既知: `OrderItemFactory` はダミーの `image_url` パスを生成するので、Factory 由来の注文詳細では画像が 404 で崩れる。実注文（F7 チェックアウト経由、seed 商品は画像なし）では空文字 → "No Image" になるので実害なし。気になれば F8 で Factory を調整
 
 ### R2 振り返り（実装後に記入）
 - 良かった点:
