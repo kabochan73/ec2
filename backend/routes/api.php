@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Api\AddressController;
 use App\Http\Controllers\Api\Admin\CategoryController as AdminCategoryController;
+use App\Http\Controllers\Api\Admin\OrderController as AdminOrderController;
 use App\Http\Controllers\Api\Admin\ProductController as AdminProductController;
 use App\Http\Controllers\Api\Admin\ProductImageController as AdminProductImageController;
 use App\Http\Controllers\Api\Admin\VariantController as AdminVariantController;
@@ -88,4 +89,9 @@ Route::middleware(['auth:sanctum', 'admin'])->prefix('admin')->group(function ()
     Route::post('/products/{product}/images', [AdminProductImageController::class, 'store']);
     Route::put('/products/{product}/images/reorder', [AdminProductImageController::class, 'reorder']);
     Route::delete('/product-images/{productImage}', [AdminProductImageController::class, 'destroy']);
+
+    // --- 注文（全ユーザー横断） ---
+    Route::get('/orders', [AdminOrderController::class, 'index']);
+    Route::get('/orders/{orderNumber}', [AdminOrderController::class, 'show']);
+    Route::put('/orders/{orderNumber}/status', [AdminOrderController::class, 'updateStatus']);
 });
