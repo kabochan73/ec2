@@ -5,6 +5,7 @@ import { useState } from "react";
 
 import ProductForm from "@/components/admin/ProductForm";
 import ProductImagesManager from "@/components/admin/ProductImagesManager";
+import VariantsManager from "@/components/admin/VariantsManager";
 import type { AdminProduct, AdminProductPayload, Category } from "@/lib/types";
 
 type EditProductClientProps = {
@@ -66,6 +67,10 @@ export default function EditProductClient({ product, categories }: EditProductCl
       <hr className="my-10 border-mist" />
 
       <ProductImagesManager productId={product.id} initialImages={product.images} />
+
+      <hr className="my-10 border-mist" />
+
+      <VariantsManager productId={product.id} initialVariants={product.variants} />
     </div>
   );
 }
