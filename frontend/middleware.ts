@@ -18,7 +18,8 @@ export function middleware(request: NextRequest) {
   return NextResponse.next();
 }
 
-// /admin は role=admin の確認も要る（管理フェーズで別途）ので、ここには含めない。
+// /admin は role=admin の確認も要るが、/account と同じく Cookie 有無だけの軽量チェックに留め、
+// 実際の権限確認は requireAdmin()（Server Component 側）で行う（docs/05-admin.md からの変更点）。
 export const config = {
-  matcher: ["/checkout/:path*", "/account/:path*"],
+  matcher: ["/checkout/:path*", "/account/:path*", "/admin/:path*"],
 };

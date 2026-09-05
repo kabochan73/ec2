@@ -133,3 +133,20 @@ export async function requireAuth(
     throw error;
   }
 }
+
+/**
+ * 要管理者権限の Server Component（/admin 系）の先頭で呼ぶ。
+ * 未ログインは requireAuth と同じく /login へ、ログイン済みだが admin でなければ
+ * 「存在しない」ことにする代わりに素直に / へ戻す（docs/05-admin.md の選択肢のうち軽い方）。
+ */
+export async function requireAdmin(
+  redirectTo: string,
+): Promise<{ user: User; token: string }> {
+  const result = await requireAuth(redirectTo);
+
+  if (result.user.role !== "admin") {
+    redirect("/");
+  }
+
+  return result;
+}

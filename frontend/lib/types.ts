@@ -31,6 +31,8 @@ export type StockStatus = "sold_out" | "low_stock" | "in_stock";
 
 // backend/app/Http/Resources/ProductImageResource.php
 export type ProductImage = {
+  // 公開側では未使用（管理画面の画像削除・並べ替えでのみ使う）
+  id: number;
   url: string;
   alt: string | null;
   position: number;
@@ -215,4 +217,108 @@ export type OrderDetail = {
   };
   created_at: string;
   items: OrderItem[];
+};
+
+// ── 管理画面（/admin、backend/app/Http/Resources/Admin/*）────────────
+
+/** ページング付き一覧のレスポンス形。{ "data": [...], "meta": {...} }（links は使わない） */
+export type ApiPaginated<T> = {
+  data: T[];
+  meta: { current_page: number; last_page: number; per_page: number; total: number };
+};
+
+// lib/admin/categories.ts の作成・更新の入力
+export type CategoryPayload = { name: string; slug: string; position: number };
+
+// backend/app/Http/Resources/Admin/ProductListResource.php
+export type AdminProductListItem = {
+  id: number;
+  name: string;
+  slug: string;
+  price: number;
+  category: { id: number; name: string };
+  is_published: boolean;
+  position: number;
+};
+
+// backend/app/Http/Resources/Admin/ProductVariantResource.php（sku まで含む点が公開側と違う）
+export type AdminProductVariant = {
+  id: number;
+  size: string;
+  color: string | null;
+  sku: string;
+  stock: number;
+  position: number;
+};
+
+// backend/app/Http/Resources/Admin/ProductResource.php（編集フォーム用のフル情報）
+export type AdminProduct = {
+  id: number;
+  category_id: number;
+  name: string;
+  slug: string;
+  price: number;
+  description: string;
+  material: string;
+  care: string | null;
+  origin: string;
+  product_code: string;
+  size_chart: SizeChart | null;
+  is_published: boolean;
+  position: number;
+  images: ProductImage[];
+  variants: AdminProductVariant[];
+};
+
+// lib/admin/products.ts の作成・更新の入力
+export type AdminProductPayload = {
+  category_id: number;
+  name: string;
+  slug: string;
+  price: number;
+  description: string;
+  material: string;
+  care?: string | null;
+  origin: string;
+  product_code: string;
+  size_chart?: SizeChart | null;
+  is_published: boolean;
+  position: number;
+};
+
+// lib/admin/variants.ts の入力。size は作成時のみ（更新では変更不可。docs/05-admin.md）
+export type CreateVariantPayload = { size: string; color?: string | null; sku: string; stock: number };
+export type UpdateVariantPayload = { color?: string | null; sku: string; stock: number };
+
+// backend/app/Http/Resources/Admin/OrderListResource.php
+export type AdminOrderListItem = {
+  order_number: string;
+  created_at: string;
+  item_count: number;
+  total: number;
+  status: OrderStatus;
+  customer: { id: number; name: string; email: string };
+};
+
+// backend/app/Http/Resources/Admin/OrderResource.php（公開側 OrderDetail + customer）
+export type AdminOrderDetail = OrderDetail & {
+  customer: { id: number; name: string; email: string };
+};
+
+// backend/app/Http/Resources/Admin/CustomerResource.php
+export type AdminCustomer = {
+  id: number;
+  name: string;
+  email: string;
+  orders_count: number;
+  created_at: string;
+};
+
+// backend/app/Http/Controllers/Api/Admin/DashboardController.php
+export type DashboardStats = {
+  orders_count: number;
+  revenue_total: number;
+  low_stock_count: number;
+  sold_out_count: number;
+  recent_orders: AdminOrderListItem[];
 };
