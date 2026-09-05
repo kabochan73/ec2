@@ -13,7 +13,7 @@ export default async function AdminDashboardPage() {
 
   return (
     <div>
-      <h1 className="mb-8 text-xl tracking-[0.1em] uppercase">Dashboard</h1>
+      <h1 className="mb-8 text-xl tracking-widest uppercase">Dashboard</h1>
 
       <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
         <StatCard label="Orders" value={stats.orders_count} />

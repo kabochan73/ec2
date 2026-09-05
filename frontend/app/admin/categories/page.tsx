@@ -12,7 +12,7 @@ export default async function AdminCategoriesPage() {
 
   return (
     <div>
-      <h1 className="mb-8 text-xl tracking-[0.1em] uppercase">Categories</h1>
+      <h1 className="mb-8 text-xl tracking-widest uppercase">Categories</h1>
       <CategoryManager initialCategories={categories} />
     </div>
   );

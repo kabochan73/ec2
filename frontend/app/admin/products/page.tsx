@@ -37,7 +37,7 @@ export default async function AdminProductsPage({ searchParams }: PageProps) {
   return (
     <div>
       <div className="mb-8 flex items-center justify-between">
-        <h1 className="text-xl tracking-[0.1em] uppercase">Products</h1>
+        <h1 className="text-xl tracking-widest uppercase">Products</h1>
         <Link
           href="/admin/products/new"
           className="border border-ink px-6 py-3 text-xs tracking-widest uppercase transition-colors hover:bg-mist"
