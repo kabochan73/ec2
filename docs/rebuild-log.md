@@ -461,6 +461,52 @@
 ### 管理画面バックエンドAPI 完了
 カテゴリ・商品（基本情報/画像/バリアント）・注文・会員・ダッシュボードの全エンドポイントを実装。次は管理画面フロントエンド（`app/admin/*`）。
 
+## 管理画面フロントエンド（`app/admin/*`。docs/05-admin.md）
+
+**Step AF1 — 2026-09-05 レイアウト + 認可 + ダッシュボード**
+- `middleware.ts` に `/admin/:path*` を追加。docs の「middlewareで role 確認」案からは変更し、`/account` と同じく Cookie 有無だけの軽量チェックに留める（実際の role 確認は `requireAdmin()` が Server Component 側で行う）
+- `lib/auth.ts` に `requireAdmin(redirectTo)`: `requireAuth` を呼んだ上で `role !== 'admin'` なら `/` へ戻す（存在を隠す404ではなく軽い方を選択）
+- `app/admin/layout.tsx`: サイドバーナビ（Dashboard/Products/Categories/Orders/Customers）。ストアフロントの `(shop)` とは別系統で Header/Footer は持たない
+- `app/admin/page.tsx`: 統計カード（Orders/Revenue/Low Stock/Sold Out）+ Recent Orders テーブル
+- 確認: 未ログイン→`/login?redirect=`、非admin→`/`、adminはダッシュボード表示。`tsc`/`lint` パス
+
+**Step AF2 — 2026-09-05 カテゴリ管理画面**
+- `components/admin/CategoryManager.tsx`: 一覧・追加・編集・削除・並べ替え（▲▼ボタンで隣接入替 → 全件の並び順を reorder API に送る）。`AddressBook` と同じくローカル state + 成功後の一覧取り直し
+- 実装直後のテストで `GET /bff/admin/categories` のハンドラー実装漏れ（405）を発見・修正。以降のステップでは新規 route.ts 実装のたびに `refetch()` が叩く URL と実装済みメソッドを突き合わせるチェックを徹底
+- 確認（CDP）: 一覧・並べ替え・追加・編集・削除。`tsc`/`lint` パス
+
+**Step AF3 — 2026-09-05 商品一覧ページ**
+- 検索（`q`）・カテゴリ絞り込み・ページングを全て GET クエリで表現し、`<form method="get">` と `Link` のページ遷移だけで完結させる（フィルタ状態を持つだけの一覧に Client Component は不要という判断）
+- 確認: 未公開商品も検索にヒット、カテゴリ絞り込み、空結果表示。`tsc`/`lint` パス
+
+**Step AF4 — 2026-09-05 商品の新規作成・編集フォーム（基本情報）**
+- `components/admin/SizeChartEditor.tsx`: `size_chart`（jsonb）の編集。docs は「列名＋S/M/Lの数値グリッド編集」だったが、動的な列追加・削除まで作るとフォームが重くなるため、列名・各サイズの数値をカンマ区切りテキストで編集する簡易版にした（`forwardRef` + `useImperativeHandle` で親からは `getValue()` を呼ぶだけ）
+- `app/admin/products/new`・`app/admin/products/[id]`: カテゴリ選択・基本情報一式・公開フラグ
+- 確認（CDP）: 新規作成 → 編集ページへ遷移、既存商品の編集（size_chart の読み込み込み）、削除 → 一覧へ遷移。`tsc`/`lint` パス
+
+**Step AF5 — 2026-09-05 商品画像管理 + `/media` プロキシ**
+- `app/media/[...key]/route.ts`: 元々の未実装タスクだった画像配信プロキシをこのタイミングで実装（`@aws-sdk/client-s3` の `GetObjectCommand`、`forcePathStyle: true` が MinIO 必須）。`docker-compose.yml` の frontend に `BUCKET_*` 環境変数を追加
+- `components/admin/ProductImagesManager.tsx`: アップロード（multipart）・並べ替え・削除
+- ここでも `GET /bff/admin/products/{id}` のハンドラー漏れ（画像一覧の再取得に必要）を発見・修正。さらにテスト用に使っていた1x1のダミーJPEGがChromeのデコーダーでは無効な画像として扱われ「アップロードは成功するが表示が壊れる」現象に遭遇したが、有効なJPEGに差し替えたら解決（実装のバグではなくテストデータの問題と判明）
+- 確認: MinIOへの実アップロード・配信・削除を実ファイルで確認、並べ替えでPRIMARY/HOVERラベル切り替え。`tsc`/`lint` パス
+
+**Step AF6 — 2026-09-05 バリアント管理**
+- `components/admin/VariantForm.tsx`: size は新規作成時のみ選択可能、編集では読み取り専用表示（docs/05-admin.md）
+- 確認（CDP）で一度「フォーム送信してもAPIが呼ばれない」現象に遭遇 → 原因はテストスクリプト側が `document.querySelector("form")` でページ最初のフォーム（商品基本情報フォーム）を掴んでいたため（ページ内に複数 `<form>` があった）。実装自体は問題無し
+- 確認: 作成・編集（sku重複・size+color重複の422込み）・削除。`tsc`/`lint` パス
+
+**Step AF7 — 2026-09-05 注文管理画面**
+- `components/admin/OrderStatusToggle.tsx`: pending ⇄ cancelled のトグルボタン（在庫の解放・再引当は backend の `UpdateOrderStatus` Action 任せ）
+- 確認で `router.refresh()` 直後に画面が旧ステータスのまま見える瞬間があったが、待ち時間を伸ばしたら正しく反映された（devサーバーのコンパイル待ちによるもので、このプロジェクトで何度か出ている既知の現象。実装のバグではない）
+- 確認: 一覧・絞り込み・詳細（customer情報込み）・Cancel Order（在庫復元）・Reopen Order（在庫再引当）。`tsc`/`lint` パス
+
+**Step AF8 — 2026-09-05 会員一覧。管理画面フロントエンド完了**
+- 閲覧のみの一覧（注文数・登録日）
+- 確認: 一覧表示。`tsc`/`lint` パス
+
+### 管理画面（バックエンド + フロントエンド）完了
+カテゴリ・商品（基本情報/画像/バリアント）・注文・会員・ダッシュボードの管理画面が一通り動作する状態になった。
+
 ### R2 振り返り（実装後に記入）
 - 良かった点:
 - 詰まった点:
