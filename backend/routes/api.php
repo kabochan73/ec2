@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Api\AddressController;
+use App\Http\Controllers\Api\Admin\CategoryController as AdminCategoryController;
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\CategoryController;
 use App\Http\Controllers\Api\OrderController;
@@ -57,4 +58,14 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/orders', [OrderController::class, 'store']);
     Route::get('/orders', [OrderController::class, 'index']);
     Route::get('/orders/{orderNumber}', [OrderController::class, 'show']);
+});
+
+// --- 管理画面（admin ロールのみ。docs/05-admin.md） ---
+Route::middleware(['auth:sanctum', 'admin'])->prefix('admin')->group(function () {
+    // reorder は {category} より先に登録する（先に静的パスをマッチさせるため）
+    Route::put('/categories/reorder', [AdminCategoryController::class, 'reorder']);
+    Route::get('/categories', [AdminCategoryController::class, 'index']);
+    Route::post('/categories', [AdminCategoryController::class, 'store']);
+    Route::put('/categories/{category}', [AdminCategoryController::class, 'update']);
+    Route::delete('/categories/{category}', [AdminCategoryController::class, 'destroy']);
 });
