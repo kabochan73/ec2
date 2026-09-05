@@ -410,6 +410,57 @@
 ### F7（チェックアウト）完了
 配送先選択・新規住所・在庫再検証・注文確定・完了ページまで一通り実装。
 
+**リファクタ — 2026-09-05 `(shop)` 配下をルートグループで整理**
+- `(shop)/` 直下に並んでいた `account` `cart` `checkout` `login` `products` `register` を `(catalog)` `(cart)` `(auth)` `(account)` の4つのルートグループに分割（URL・挙動は変わらない。ファイルツリー整理のみ）
+- 確認: `tsc`/`lint` パス、主要ルートを curl で疎通確認。`docs/08-frontend-design.md` のディレクトリ構成図を更新
+
+**Step F8（一部）— 2026-09-05 仕上げ**
+- 未使用の `public/*.svg`（create-next-app のデフォルトスキャフォールド）を削除
+- `UpdatePasswordRequest::messages()` で `current_password` エラーを日本語化（他は Action 側で日本語メッセージを明示しているか zod で事前に弾かれるため気づきにくかった既知の不整合）
+- `app/(shop)/loading.tsx` / `error.tsx`: (shop) 配下共通のローディング・エラー境界。`error.tsx` は一時的に例外を仕込んで CDP で実際の描画を確認（curl は JS を実行しないため "Switched to client rendering" としか出ず、ブラウザ確認が必須だった）
+- `components/ui/Toast.tsx`: 画面下固定の汎用トースト。`NewsletterForm` のインライン文言表示から差し替え
+- レスポンシブ（モバイル）確認: `Emulation.setDeviceMetricsOverride`（390×844）で headless Chrome の layout viewport を正しくエミュレートして確認（従来の `--window-size` 起動フラグは効かないことが分かっていたための対処）。主要ページで崩れ無し
+- 確認の過程で発見・修正: 配送先住所表示で `{prefecture}\n{city}` のように式だけを改行で並べると JSX が改行のみの空白ノードを除去して連結表示になる不具合（`checkout` の配送先選択・`AddressBook`・注文詳細の配送先スナップショットの3箇所）
+- 残り（F8 の残タスク）: `OrderItemFactory` の image_url 調整（気になれば）
+
+## 管理画面バックエンド API（`/api/admin/*`。docs/05-admin.md）
+
+**Step A1 — 2026-09-05 `EnsureAdmin` ミドルウェア + カテゴリ管理API**
+- `app/Http/Middleware/EnsureAdmin.php`: `role !== admin` を 403（個々のリソース所有権チェックの 404 とは違い、ここは「認証済みだが権限が無い」ことが明確なので素直に 403）。`bootstrap/app.php` でエイリアス登録（Laravel 11+ の Kernel.php を使わない書き方）
+- `app/Exceptions/CategoryInUseException.php`: 所属商品がある状態でのカテゴリ削除を 409（DB の RESTRICT に頼らず事前チェック）
+- カテゴリの一覧・作成・更新・削除・並べ替え（`CreateCategory` 等の Action 一式）
+- 確認: 非adminで403・未認証で401・CRUD一式・並べ替えでposition更新・商品有りカテゴリの削除で409。Pint パス
+
+**Step A2 — 2026-09-05 商品管理API（基本情報のCRUD）**
+- `app/Http/Resources/Admin/{ProductList,Product,ProductVariant}Resource.php`: 公開側と違い is_published に関わらず全件対象、編集フォーム用に category_id・sku 等の生の値を返す
+- `ProductImageResource`（公開・管理共用）に `id` を追加（管理画面の画像削除・並べ替えで対象を特定するため）
+- 一覧（`q` 名前検索・`category` slug絞り込み・ページング）・作成・詳細（images/variants込み）・更新・削除
+- 確認: 未公開商品も一覧・検索にヒットすること、slug重複422、存在しないcategory_id→422、削除204。Pint パス
+
+**Step A3 — 2026-09-05 バリアント管理API（CRUD）**
+- `size + color` の複合ユニーク制約（DB の部分UNIQUEインデックス）と同じ条件を `FormRequest::withValidator()` で事前チェックし、フォームにそのまま返せる422にする
+- 作成（position自動採番）・更新（sizeは変更不可。docs/05-admin.md）・削除
+- 確認: size+color重複422、sku重複422、color変更による衝突422、削除204。Pint パス
+
+**Step A4 — 2026-09-05 商品画像アップロードAPI（MinIO/S3）**
+- `league/flysystem-aws-s3-v3` を導入。`backend/.env`（実体験） / `.env.example` に MinIO 接続情報を反映（`docs/07-local-dev.md` に値は記載済みだったが実ファイルに未反映だった）
+- `app/Services/StorageService.php`: S3互換バケットの薄いラッパー（docs/06 で唯一 Service を使う想定の箇所）。キー形式 `products/{product_id}/{ulid}.{ext}`
+- アップロード（`image` バリデーション・5MB上限）・並べ替え（他商品の画像混入は422）・削除（バケットの実体も削除）
+- 確認: MinIOへの実アップロード・ダウンロード・削除を tinker で直接確認、画像以外のファイル→422、他商品の画像idを混ぜた並べ替え→422。Pint パス
+
+**Step A5 — 2026-09-05 注文管理API（一覧・詳細・ステータス変更）**
+- `app/Http/Resources/Admin/{OrderList,Order}Resource.php`: 公開側と違い customer（id/name/email）を含む
+- `app/Actions/Admin/Order/UpdateOrderStatus.php`: R2 は pending ⇄ cancelled のみ。cancelled にすると在庫を戻し、pending に戻すと在庫を再度引き当てる（不足していれば `InsufficientStockException` で 422。注文作成時と同じ例外・レスポンス形を再利用）
+- 確認: pending→cancelled で在庫復元、cancelled→pending で在庫再引当、在庫不足時は422 + ステータス据え置き（トランザクションロールバック）を実際の在庫数で確認。Pint パス
+
+**Step A6 — 2026-09-05 会員一覧 + ダッシュボード統計API。管理画面バックエンド完了**
+- 会員一覧（`role=customer`、注文数・登録日）
+- ダッシュボード統計（`orders_count` / `revenue_total`（cancelled除く）/ `low_stock_count` / `sold_out_count`（商品単位で全variant合算の在庫から判定。`ProductSummaryResource` と同じ考え方）/ `recent_orders`）
+- 確認: 実データ（低在庫1件・売り切れ1件を個別に突き合わせ）と統計値が一致。Pint パス
+
+### 管理画面バックエンドAPI 完了
+カテゴリ・商品（基本情報/画像/バリアント）・注文・会員・ダッシュボードの全エンドポイントを実装。次は管理画面フロントエンド（`app/admin/*`）。
+
 ### R2 振り返り（実装後に記入）
 - 良かった点:
 - 詰まった点:
