@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 
 import ProductForm from "@/components/admin/ProductForm";
+import ProductImagesManager from "@/components/admin/ProductImagesManager";
 import type { AdminProduct, AdminProductPayload, Category } from "@/lib/types";
 
 type EditProductClientProps = {
@@ -61,6 +62,10 @@ export default function EditProductClient({ product, categories }: EditProductCl
       >
         Delete Product
       </button>
+
+      <hr className="my-10 border-mist" />
+
+      <ProductImagesManager productId={product.id} initialImages={product.images} />
     </div>
   );
 }

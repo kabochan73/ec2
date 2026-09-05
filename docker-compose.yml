@@ -97,10 +97,18 @@ services:
       # サーバー側（Route Handler / Server Component）から Laravel を呼ぶ先。コンテナ名で解決
       API_URL: "http://backend:8080"
       NEXT_PUBLIC_SITE_URL: "http://localhost:3000"
+      # /media プロキシ（app/media/[...key]/route.ts）が S3 互換バケットから画像を読むための資格情報。
+      # ローカルは MinIO。backend/.env の AWS_* と資格情報自体は同じ（ec2 / ec2secret）
+      BUCKET_ENDPOINT: "http://minio:9000"
+      BUCKET_ACCESS_KEY_ID: "ec2"
+      BUCKET_SECRET_ACCESS_KEY: "ec2secret"
+      BUCKET_NAME: "ec2-media"
+      BUCKET_REGION: "us-east-1"
     ports:
       - "3000:3000"
     depends_on:
       - backend
+      - minio
 
   # ── バケット初期化（使い捨て）─────────────────────────────
   # minio が healthy になったら 1 回だけ実行してバケットを作る。
