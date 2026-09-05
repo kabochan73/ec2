@@ -2,6 +2,8 @@
 
 import { useState } from "react";
 
+import Toast from "@/components/ui/Toast";
+
 /**
  * ニュースレター登録フォーム。ダミーで、実際にはどこにも送信しない
  * （docs/01-sitemap-pages.md: 「送信でトースト表示のみ」）。
@@ -34,10 +36,7 @@ export default function NewsletterForm() {
           SUBMIT
         </button>
       </form>
-      {/* role="status" でスクリーンリーダーにも通知される */}
-      <p role="status" className="mt-2 h-4 text-[11px] text-graphite">
-        {submitted ? "Thank you for subscribing." : ""}
-      </p>
+      <Toast message="Thank you for subscribing." show={submitted} />
     </div>
   );
 }
