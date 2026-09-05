@@ -102,8 +102,7 @@ export default function AddressBook({ initialAddresses }: AddressBookProps) {
             <div className="text-sm leading-relaxed">
               <p>{address.recipient_name}</p>
               <p>
-                〒{address.postal_code} {address.prefecture}
-                {address.city}
+                〒{address.postal_code} {address.prefecture} {address.city}
               </p>
               <p>
                 {address.address_line1}

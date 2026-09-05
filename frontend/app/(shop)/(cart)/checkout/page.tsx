@@ -182,9 +182,9 @@ export default function CheckoutPage() {
                         setSelectedAddressId(address.id);
                       }}
                     />
-                    {address.recipient_name} — 〒{address.postal_code} {address.prefecture}
-                    {address.city}
-                    {address.address_line1}
+                    {address.recipient_name} — 〒{address.postal_code} {address.prefecture}{" "}
+                    {address.city} {address.address_line1}
+                    {address.address_line2 ? ` ${address.address_line2}` : ""}
                     {address.is_default && (
                       <span className="ml-2 text-[11px] tracking-widest text-graphite uppercase">
                         Default

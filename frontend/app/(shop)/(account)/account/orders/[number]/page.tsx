@@ -104,8 +104,7 @@ export default async function OrderDetailPage({ params }: PageProps) {
         <div className="mt-3 text-sm leading-relaxed">
           <p>{address.recipient_name}</p>
           <p>
-            〒{address.postal_code} {address.prefecture}
-            {address.city}
+            〒{address.postal_code} {address.prefecture} {address.city}
           </p>
           <p>
             {address.address_line1}
