@@ -51,6 +51,11 @@ export default async function AccountPage() {
         <Link href="/account/profile" className="block px-6 py-4 hover:bg-mist">
           Profile
         </Link>
+        {user.role === "admin" && (
+          <Link href="/admin" className="block px-6 py-4 hover:bg-mist">
+            Admin Panel
+          </Link>
+        )}
         <div className="px-6 py-4">
           <LogoutButton />
         </div>
