@@ -14,7 +14,7 @@ use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 
 class OrderController extends Controller
 {
-    private const PER_PAGE = 20;
+    private const PER_PAGE = 50;
 
     /**
      * 全ユーザーの注文一覧（新しい順）。クエリ: status / page

@@ -6,22 +6,29 @@ use App\Enums\UserRole;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\Admin\CustomerResource;
 use App\Models\User;
+use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 
 class CustomerController extends Controller
 {
-    private const PER_PAGE = 20;
+    private const PER_PAGE = 50;
 
     /**
-     * 会員一覧（閲覧のみ）。新しい順。クエリ: page
+     * 会員一覧（閲覧のみ）。新しい順。クエリ: q（name / email の部分一致）/ page
      */
-    public function index(): AnonymousResourceCollection
+    public function index(Request $request): AnonymousResourceCollection
     {
-        $customers = User::where('role', UserRole::Customer)
+        $query = User::where('role', UserRole::Customer)
             ->withCount('orders')
-            ->orderByDesc('created_at')
-            ->paginate(self::PER_PAGE);
+            ->orderByDesc('created_at');
 
-        return CustomerResource::collection($customers);
+        if ($q = $request->string('q')->toString()) {
+            $query->where(function ($sub) use ($q) {
+                $sub->where('name', 'like', "%{$q}%")
+                    ->orWhere('email', 'like', "%{$q}%");
+            });
+        }
+
+        return CustomerResource::collection($query->paginate(self::PER_PAGE));
     }
 }

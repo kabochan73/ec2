@@ -21,7 +21,7 @@
 | `/admin/categories` | カテゴリ一覧・追加・編集・並べ替え |
 | `/admin/orders` | 注文一覧（ステータスフィルタ・ページング） |
 | `/admin/orders/[number]` | 注文詳細・ステータス変更 |
-| `/admin/customers` | 会員一覧（閲覧のみ、注文数・登録日） |
+| `/admin/customers` | 会員一覧（閲覧のみ、注文数・登録日、名前/メール検索） |
 
 管理画面はモノトーンだが、ストアフロントのような装飾は排し、機能優先のテーブル/フォームレイアウト。
 
@@ -80,7 +80,7 @@
 ### 会員
 | メソッド | パス | 備考 |
 |---|---|---|
-| GET | `/api/admin/customers` | `role='customer'` の一覧。注文数・登録日 |
+| GET | `/api/admin/customers` | `role='customer'` の一覧。注文数・登録日。`?q=`（name / email 部分一致）・`?page=` |
 
 ## 画像ストレージ（Railway バケット）
 

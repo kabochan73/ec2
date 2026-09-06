@@ -18,7 +18,7 @@ use Illuminate\Http\Response;
 
 class ProductController extends Controller
 {
-    private const PER_PAGE = 20;
+    private const PER_PAGE = 50;
 
     /**
      * 一覧。公開側と違い is_published に関わらず全件対象。
