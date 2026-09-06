@@ -103,8 +103,8 @@
 
 ### `/account` ダッシュボード
 - `ようこそ, {name}`
-- 直近の注文1件のサマリー
-- `ORDERS` / `ADDRESSES` / `PROFILE` / `LOGOUT` のメニュー
+- `ORDERS` / `ADDRESSES` / `PROFILE` / `LOGOUT` のメニュー（admin なら `ADMIN PANEL` も）
+- ※「直近の注文1件のサマリー」は当初案にあったが、注文一覧（`/account/orders`）に行けば見れる重複なので削除した
 
 ### `/account/orders` 注文履歴
 - 一覧: 注文番号 / 日付 / 点数 / 合計 / ステータス
