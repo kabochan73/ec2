@@ -15,9 +15,8 @@ export default async function AdminDashboardPage() {
     <div>
       <h1 className="mb-8 text-xl tracking-widest uppercase">Dashboard</h1>
 
-      <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
+      <div className="grid grid-cols-2 gap-4 sm:grid-cols-3">
         <StatCard label="Orders" value={stats.orders_count} />
-        <StatCard label="Revenue" value={`¥${stats.revenue_total.toLocaleString("ja-JP")}`} />
         <StatCard label="Low Stock" value={stats.low_stock_count} />
         <StatCard label="Sold Out" value={stats.sold_out_count} />
       </div>

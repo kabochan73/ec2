@@ -14,7 +14,7 @@
 
 | パス | 内容 |
 |---|---|
-| `/admin` | ダッシュボード（注文件数・売上合計・在庫僅少/切れの商品数・最近の注文5件） |
+| `/admin` | ダッシュボード（注文件数・在庫僅少/切れの商品数・最近の注文5件） |
 | `/admin/products` | 商品一覧（未公開含む、検索・カテゴリ絞り込み・ページング） |
 | `/admin/products/new` | 商品新規作成 |
 | `/admin/products/[id]` | 商品編集（基本情報／画像／バリアント／公開フラグ） |
@@ -36,7 +36,7 @@
 ### ダッシュボード
 | メソッド | パス | 返却 |
 |---|---|---|
-| GET | `/api/admin/stats` | `{ orders_count, revenue_total, low_stock_count, sold_out_count, recent_orders: [...] }` |
+| GET | `/api/admin/stats` | `{ orders_count, low_stock_count, sold_out_count, recent_orders: [...] }`。売上は R2 では出さない（決済なしのため意味のある数字にならない） |
 
 ### 商品
 | メソッド | パス | 備考 |

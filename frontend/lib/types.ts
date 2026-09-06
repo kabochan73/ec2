@@ -317,7 +317,6 @@ export type AdminCustomer = {
 // backend/app/Http/Controllers/Api/Admin/DashboardController.php
 export type DashboardStats = {
   orders_count: number;
-  revenue_total: number;
   low_stock_count: number;
   sold_out_count: number;
   recent_orders: AdminOrderListItem[];
